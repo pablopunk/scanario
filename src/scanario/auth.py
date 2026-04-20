@@ -1,28 +1,24 @@
-"""API-key authentication backed by Redis.
+"""File-backed API-key authentication.
 
-Keys are stored as a Redis set plus one hash per key for metadata. This means
-keys survive restarts and are shared across the api, worker, and beat
-containers without any extra database.
+Keys are stored in SCANARIO_DATA_DIR/auth-keys.json so they survive restarts and
+are shared across api/worker/beat via the mounted data volume, without relying
+on Redis for credential storage.
 """
 
 from __future__ import annotations
 
+import json
 import secrets
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
-
-import redis
 
 from scanario.config import get_settings
 
 KEY_PREFIX = "sk_"
-KEY_BYTES = 24  # 48 hex chars → plenty of entropy
-KEYS_SET = "scanario:api_keys"
-
-
-def _meta_key(key: str) -> str:
-    return f"scanario:api_key:{key}"
+KEY_BYTES = 24  # 48 hex chars
+AUTH_FILE = "auth-keys.json"
 
 
 @dataclass
@@ -32,8 +28,31 @@ class ApiKeyInfo:
     created_at: str
 
 
-def _client() -> redis.Redis:
-    return redis.Redis.from_url(get_settings().redis_url, decode_responses=True)
+def _auth_path() -> Path:
+    settings = get_settings()
+    path = Path(settings.data_dir) / AUTH_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _load() -> dict:
+    path = _auth_path()
+    if not path.exists():
+        return {"keys": []}
+    try:
+        data = json.loads(path.read_text())
+        if not isinstance(data, dict) or "keys" not in data or not isinstance(data["keys"], list):
+            return {"keys": []}
+        return data
+    except Exception:
+        return {"keys": []}
+
+
+def _save(data: dict) -> None:
+    path = _auth_path()
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, indent=2, sort_keys=True))
+    tmp.replace(path)
 
 
 def generate_key() -> str:
@@ -41,62 +60,53 @@ def generate_key() -> str:
 
 
 def create_key(label: str = "") -> str:
-    r = _client()
+    data = _load()
     key = generate_key()
-    r.sadd(KEYS_SET, key)
-    r.hset(
-        _meta_key(key),
-        mapping={
+    data["keys"].append(
+        {
+            "key": key,
             "label": label or "",
             "created_at": datetime.now(timezone.utc).isoformat(),
-        },
+        }
     )
+    _save(data)
     return key
 
 
 def verify_key(key: Optional[str]) -> bool:
     if not key:
         return False
-    try:
-        return bool(_client().sismember(KEYS_SET, key))
-    except redis.RedisError:
-        return False
+    data = _load()
+    return any(entry.get("key") == key for entry in data["keys"])
+
 
 
 def list_keys() -> list[ApiKeyInfo]:
-    r = _client()
-    keys = sorted(r.smembers(KEYS_SET))
+    data = _load()
     out: list[ApiKeyInfo] = []
-    for k in keys:
-        meta = r.hgetall(_meta_key(k)) or {}
+    for entry in sorted(data["keys"], key=lambda x: x.get("created_at", "")):
+        k = entry.get("key", "")
         out.append(
             ApiKeyInfo(
-                prefix=k[: len(KEY_PREFIX) + 8] + "…",
-                label=meta.get("label", ""),
-                created_at=meta.get("created_at", ""),
+                prefix=k[: len(KEY_PREFIX) + 8] + "…" if k else "",
+                label=entry.get("label", ""),
+                created_at=entry.get("created_at", ""),
             )
         )
     return out
 
 
 def revoke_by_prefix(prefix: str) -> int:
-    """Revoke every key whose full value starts with the given prefix."""
     if not prefix:
         return 0
-    r = _client()
-    matches = [k for k in r.smembers(KEYS_SET) if k.startswith(prefix)]
-    if not matches:
-        return 0
-    pipe = r.pipeline()
-    for k in matches:
-        pipe.srem(KEYS_SET, k)
-        pipe.delete(_meta_key(k))
-    pipe.execute()
-    return len(matches)
+    data = _load()
+    before = len(data["keys"])
+    data["keys"] = [entry for entry in data["keys"] if not entry.get("key", "").startswith(prefix)]
+    removed = before - len(data["keys"])
+    if removed:
+        _save(data)
+    return removed
 
 
 def has_any_key() -> bool:
-    try:
-        return _client().scard(KEYS_SET) > 0
-    except redis.RedisError:
-        return False
+    return bool(_load()["keys"])

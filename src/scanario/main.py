@@ -1009,7 +1009,7 @@ def cmd_pdf(args):
 
 
 def cmd_auth(args):
-    """Manage API keys (requires Redis to be reachable)."""
+    """Manage API keys stored in SCANARIO_DATA_DIR/auth-keys.json."""
     try:
         from scanario import auth
     except ImportError as exc:
@@ -1021,8 +1021,8 @@ def cmd_auth(args):
         try:
             key = auth.create_key(label=args.label or "")
         except Exception as exc:
-            print(f"Error: could not reach Redis ({exc}).", file=sys.stderr)
-            print("Make sure SCANARIO_REDIS_URL points at a running Redis.", file=sys.stderr)
+            print(f"Error: could not write auth file ({exc}).", file=sys.stderr)
+            print("Make sure SCANARIO_DATA_DIR is writable.", file=sys.stderr)
             sys.exit(1)
         print("✅ New API key created. Save it now – it will NOT be shown again:\n")
         print(f"   {key}\n")
