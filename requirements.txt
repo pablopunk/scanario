@@ -1,0 +1,16 @@
+opencv-python-headless>=4.9
+numpy
+python-dotenv
+google-genai
+pillow
+rembg
+onnxruntime
+fastapi>=0.104
+uvicorn[standard]>=0.24
+python-multipart>=0.0.6
+celery[redis]>=5.3
+redis>=5.0
+pydantic>=2.0
+pydantic-settings>=2.0
+requests>=2.31
+img2pdf>=0.5

@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - SCANARIO_REDIS_URL=redis://redis:6379/0
+      - SCANARIO_DATA_DIR=/app/data
+      - SCANARIO_MAX_AGE_DAYS=7
+      - SCANARIO_CLEANUP_INTERVAL_HOURS=24
+    volumes:
+      - scanario_data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    build: .
+    environment:
+      - SCANARIO_REDIS_URL=redis://redis:6379/0
+      - SCANARIO_DATA_DIR=/app/data
+    volumes:
+      - scanario_data:/app/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+    command: celery -A worker.celery_app worker --loglevel=info --concurrency=2
+
+  beat:
+    build: .
+    environment:
+      - SCANARIO_REDIS_URL=redis://redis:6379/0
+      - SCANARIO_DATA_DIR=/app/data
+    volumes:
+      - scanario_data:/app/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+    command: celery -A worker.celery_app beat --loglevel=info
+
+volumes:
+  redis_data:
+  scanario_data:
