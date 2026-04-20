@@ -312,7 +312,25 @@ def fit_quad(mask: np.ndarray):
     ]
     if any(c is None for c in corners):
         return None
-    return order_points(np.array(corners, dtype=np.float32))
+
+    corners = np.array(corners, dtype=np.float32)
+
+    # Check if any corner is way outside the image (line intersection failed)
+    # In that case, find corners on the contour closest to where lines intersect
+    if np.any(corners[:, 0] < -0.1 * W) or np.any(corners[:, 0] > 1.1 * W) or \
+       np.any(corners[:, 1] < -0.1 * H) or np.any(corners[:, 1] > 1.1 * H):
+        # Find contour points closest to each intersection region
+        # Clip intersection points to image bounds first
+        clipped = np.clip(corners, [0, 0], [W-1, H-1])
+        # Find nearest contour points to clipped positions
+        hull = cv2.convexHull(contour.reshape(-1, 1, 2)).reshape(-1, 2).astype(np.float32)
+        fixed_corners = []
+        for target in clipped:
+            dists = np.linalg.norm(hull - target, axis=1)
+            fixed_corners.append(hull[np.argmin(dists)])
+        corners = np.array(fixed_corners, dtype=np.float32)
+
+    return order_points(corners)
 
 
 # ---------------------------------------------------------------------------
