@@ -113,6 +113,38 @@
             text-decoration: none;
             color: inherit;
         }
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+        .history-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .history-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+        }
+        .history-item .meta {
+            padding: 8px;
+            font-size: 11px;
+            color: #666;
+        }
+        .history-item .time {
+            font-weight: 500;
+            color: #333;
+        }
         .error {
             color: #dc3545;
             font-size: 14px;
@@ -157,6 +189,14 @@
     <div id="status" style="display: none;"></div>
     <div id="results" class="results"></div>
 
+    <div class="section" id="historySection" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 16px; font-weight: 600;">Previous Scans</h3>
+            <button id="clearHistoryBtn" style="width: auto; padding: 6px 12px; font-size: 12px; background: #6c757d;">Clear History</button>
+        </div>
+        <div id="historyGrid" class="history-grid"></div>
+    </div>
+
     <script>
         const apiKeyInput = document.getElementById('apiKey');
         const dropzone = document.getElementById('dropzone');
@@ -167,8 +207,143 @@
         const modeSelect = document.getElementById('mode');
         const statusDiv = document.getElementById('status');
         const resultsDiv = document.getElementById('results');
+        const historySection = document.getElementById('historySection');
+        const historyGrid = document.getElementById('historyGrid');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
         let selectedFile = null;
+        const HISTORY_KEY = 'scanario_history';
+
+        function loadHistory() {
+            try {
+                return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            } catch {
+                return [];
+            }
+        }
+
+        function saveHistory(history) {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
+        }
+
+        function addToHistory(jobId, files, mode) {
+            const history = loadHistory();
+            const thumbnail = files.find(f => f.includes('enhanced')) || files[files.length - 1];
+            history.unshift({
+                jobId,
+                timestamp: Date.now(),
+                files,
+                mode,
+                thumbnail
+            });
+            saveHistory(history);
+            renderHistory();
+        }
+
+        function formatTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return 'just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function renderHistory() {
+            const history = loadHistory();
+            const apiKey = apiKeyInput.value.trim();
+            
+            if (history.length === 0) {
+                historySection.style.display = 'none';
+                return;
+            }
+            
+            historySection.style.display = 'block';
+            historyGrid.innerHTML = history.map(item => {
+                const imageUrl = apiKey ? `/images/${item.jobId}/${item.thumbnail}?api_key=${encodeURIComponent(apiKey)}` : '';
+                return `
+                    <div class="history-item" data-jobid="${item.jobId}">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="" loading="lazy">` : '<div style="height:100px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:24px">📄</div>'}
+                        <div class="meta">
+                            <div class="time">${formatTimeAgo(item.timestamp)}</div>
+                            <div>${item.mode || 'gray'}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers
+            historyGrid.querySelectorAll('.history-item').forEach(el => {
+                el.addEventListener('click', () => loadJobFromHistory(el.dataset.jobid));
+            });
+        }
+
+        async function loadJobFromHistory(jobId) {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                alert('Please enter your API key first');
+                apiKeyInput.focus();
+                return;
+            }
+
+            const history = loadHistory();
+            const item = history.find(h => h.jobId === jobId);
+            if (!item) return;
+
+            // Show cached results immediately
+            resultsDiv.innerHTML = '';
+            showResults(jobId, item.files, apiKey);
+            
+            statusDiv.className = 'status processing';
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = '⏳ Checking job status...';
+
+            try {
+                const resp = await fetch(`/jobs/${jobId}`, {
+                    headers: { 'X-API-Key': apiKey }
+                });
+                if (!resp.ok) throw new Error('Failed to load job');
+                const data = await resp.json();
+                
+                if (data.status === 'completed') {
+                    statusDiv.className = 'status completed';
+                    statusDiv.textContent = '✅ Loaded from history';
+                    // Refresh with latest files if different
+                    if (JSON.stringify(data.files) !== JSON.stringify(item.files)) {
+                        showResults(jobId, data.files, apiKey);
+                        // Update history
+                        item.files = data.files;
+                        saveHistory(history);
+                        renderHistory();
+                    }
+                } else if (data.status === 'failed') {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Job failed: ' + (data.error || 'Unknown');
+                } else {
+                    statusDiv.className = 'status processing';
+                    statusDiv.textContent = `⏳ Still ${data.status}...`;
+                    // Continue polling
+                    pollJob(jobId, apiKey);
+                }
+            } catch (err) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ ' + err.message;
+            }
+        }
+
+        clearHistoryBtn.addEventListener('click', () => {
+            if (confirm('Clear all scan history from this browser?')) {
+                localStorage.removeItem(HISTORY_KEY);
+                renderHistory();
+                resultsDiv.innerHTML = '';
+            }
+        });
+
+        // Load history on page load
+        apiKeyInput.addEventListener('input', renderHistory);
+        renderHistory();
 
         // Load saved API key
         apiKeyInput.value = localStorage.getItem('scanarioApiKey') || '';
@@ -229,6 +404,7 @@
                 if (data.status === 'completed') {
                     statusDiv.textContent = '✅ Scan complete!';
                     showResults(jobId, data.files, apiKey);
+                    addToHistory(jobId, data.files, modeSelect.value);
                     scanBtn.disabled = false;
                     scanBtn.textContent = 'Upload & Scan';
                     return;
@@ -266,17 +442,23 @@
 
             sortedFiles.forEach(filename => {
                 const prefix = fileOrder.find(p => filename.startsWith(p)) || filename;
+                const imageUrl = `/images/${jobId}/${filename}?api_key=${encodeURIComponent(apiKey)}`;
                 const item = document.createElement('div');
                 item.className = 'result-item';
                 item.innerHTML = `
-                    <a href="/images/${jobId}/${filename}" target="_blank">
-                        <img src="/images/${jobId}/${filename}" alt="${filename}" 
+                    <a href="${imageUrl}" target="_blank">
+                        <img src="${imageUrl}" alt="${filename}" 
                              style="filter: blur(0);" loading="lazy">
                         <div class="label">${labels[prefix] || filename}</div>
                     </a>
                 `;
                 resultsDiv.appendChild(item);
             });
+            
+            // Scroll to results on mobile
+            if (window.innerWidth < 600) {
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            }
         }
 
         scanBtn.addEventListener('click', async () => {
