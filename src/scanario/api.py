@@ -1,7 +1,9 @@
+from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from scanario.auth import verify_key
@@ -23,6 +25,20 @@ app = FastAPI(
     description="Document scanning API with job queue",
     version="1.0.0",
 )
+
+# Static files (UI)
+static_dir = Path(__file__).parent / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    """Serve the web UI."""
+    index_file = static_dir / "index.html"
+    if index_file.exists():
+        return HTMLResponse(content=index_file.read_text())
+    return HTMLResponse(content="<h1>scanario API</h1><p>UI not found. API is at /docs</p>")
 
 settings = get_settings()
 

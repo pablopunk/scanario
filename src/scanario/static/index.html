@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>scanario</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        h1 { font-size: 24px; margin-bottom: 20px; }
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .dropzone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .dropzone:hover, .dropzone.dragover {
+            border-color: #007bff;
+            background: #f0f7ff;
+        }
+        .dropzone p { color: #666; margin: 8px 0; }
+        .dropzone .hint { font-size: 12px; color: #999; }
+        input[type="file"] { display: none; }
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+        .status.pending { background: #fff3cd; color: #856404; }
+        .status.processing { background: #cce5ff; color: #004085; }
+        .status.completed { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .result-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .result-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        .result-item .label {
+            padding: 10px;
+            font-size: 13px;
+            color: #555;
+            text-align: center;
+        }
+        .result-item a {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📄 scanario</h1>
+    
+    <div class="section">
+        <label for="apiKey">API Key</label>
+        <input type="password" id="apiKey" placeholder="sk_...">
+        <p class="hint" style="font-size: 12px; color: #666; margin-top: 6px;">
+            Create one with: <code>docker compose exec api python -m scanario.main auth create</code>
+        </p>
+    </div>
+
+    <div class="section">
+        <div class="dropzone" id="dropzone">
+            <p><strong>Drop image here</strong> or click to select</p>
+            <p class="hint">JPG, PNG, WebP — max 10MB</p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        
+        <div id="fileInfo" style="margin-top: 12px; font-size: 14px; color: #555; display: none;">
+            Selected: <strong id="fileName"></strong>
+        </div>
+    </div>
+
+    <div class="section">
+        <label for="mode">Enhancement Mode</label>
+        <select id="mode">
+            <option value="gray" selected>Gray (default)</option>
+            <option value="archive">Archive</option>
+            <option value="color">Color</option>
+        </select>
+    </div>
+
+    <button id="scanBtn" disabled>Upload & Scan</button>
+
+    <div id="status" style="display: none;"></div>
+    <div id="results" class="results"></div>
+
+    <script>
+        const apiKeyInput = document.getElementById('apiKey');
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const scanBtn = document.getElementById('scanBtn');
+        const modeSelect = document.getElementById('mode');
+        const statusDiv = document.getElementById('status');
+        const resultsDiv = document.getElementById('results');
+
+        let selectedFile = null;
+
+        // Load saved API key
+        apiKeyInput.value = localStorage.getItem('scanarioApiKey') || '';
+        apiKeyInput.addEventListener('change', () => {
+            localStorage.setItem('scanarioApiKey', apiKeyInput.value);
+        });
+
+        // Dropzone handling
+        dropzone.addEventListener('click', () => fileInput.click());
+        
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+        
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+        
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileInfo.style.display = 'block';
+            scanBtn.disabled = !apiKeyInput.value;
+        }
+
+        apiKeyInput.addEventListener('input', () => {
+            scanBtn.disabled = !apiKeyInput.value || !selectedFile;
+        });
+
+        async function pollJob(jobId, apiKey) {
+            const maxAttempts = 60;
+            for (let i = 0; i < maxAttempts; i++) {
+                const resp = await fetch(`/jobs/${jobId}`, {
+                    headers: { 'X-API-Key': apiKey }
+                });
+                if (!resp.ok) throw new Error('Failed to check status');
+                const data = await resp.json();
+                
+                statusDiv.className = 'status ' + data.status;
+                statusDiv.style.display = 'block';
+                
+                if (data.status === 'completed') {
+                    statusDiv.textContent = '✅ Scan complete!';
+                    showResults(jobId, data.files, apiKey);
+                    scanBtn.disabled = false;
+                    scanBtn.textContent = 'Upload & Scan';
+                    return;
+                } else if (data.status === 'failed') {
+                    statusDiv.textContent = '❌ Failed: ' + (data.error || 'Unknown error');
+                    scanBtn.disabled = false;
+                    scanBtn.textContent = 'Upload & Scan';
+                    return;
+                } else {
+                    statusDiv.textContent = `⏳ ${data.status}... (${i + 1}s)`;
+                }
+                
+                await new Promise(r => setTimeout(r, 2000));
+            }
+            statusDiv.textContent = '⏱️ Timeout - check /jobs manually';
+            scanBtn.disabled = false;
+            scanBtn.textContent = 'Upload & Scan';
+        }
+
+        function showResults(jobId, files, apiKey) {
+            resultsDiv.innerHTML = '';
+            const fileOrder = ['01-corners', '02-warped', '03-enhanced'];
+            const labels = {
+                '01-corners': 'Detected Corners',
+                '02-warped': 'Warped',
+                '03-enhanced': 'Enhanced'
+            };
+            
+            // Sort files by prefix
+            const sortedFiles = [...files].sort((a, b) => {
+                const aIdx = fileOrder.findIndex(p => a.startsWith(p));
+                const bIdx = fileOrder.findIndex(p => b.startsWith(p));
+                return aIdx - bIdx;
+            });
+
+            sortedFiles.forEach(filename => {
+                const prefix = fileOrder.find(p => filename.startsWith(p)) || filename;
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.innerHTML = `
+                    <a href="/images/${jobId}/${filename}" target="_blank">
+                        <img src="/images/${jobId}/${filename}" alt="${filename}" 
+                             style="filter: blur(0);" loading="lazy">
+                        <div class="label">${labels[prefix] || filename}</div>
+                    </a>
+                `;
+                resultsDiv.appendChild(item);
+            });
+        }
+
+        scanBtn.addEventListener('click', async () => {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            if (!selectedFile) {
+                alert('Please select an image');
+                return;
+            }
+
+            scanBtn.disabled = true;
+            scanBtn.textContent = 'Uploading...';
+            resultsDiv.innerHTML = '';
+            statusDiv.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('mode', modeSelect.value);
+                formData.append('backend', 'auto');
+                formData.append('debug', 'false');
+
+                const resp = await fetch('/scan', {
+                    method: 'POST',
+                    headers: { 'X-API-Key': apiKey },
+                    body: formData
+                });
+
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.detail?.message || `HTTP ${resp.status}`);
+                }
+
+                const data = await resp.json();
+                scanBtn.textContent = 'Processing...';
+                await pollJob(data.job_id, apiKey);
+
+            } catch (err) {
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+                statusDiv.textContent = '❌ ' + err.message;
+                scanBtn.disabled = false;
+                scanBtn.textContent = 'Upload & Scan';
+            }
+        });
+    </script>
+</body>
+</html>
