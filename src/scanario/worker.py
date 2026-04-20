@@ -5,11 +5,8 @@ from pathlib import Path
 from celery import Celery
 from celery.signals import worker_ready
 
-from config import get_settings
-from storage import get_results_dir, get_upload_path
-
-# Add current dir to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
+from scanario.config import get_settings
+from scanario.storage import get_results_dir, get_upload_path
 
 settings = get_settings()
 
@@ -34,7 +31,7 @@ celery_app.conf.update(
 def run_scanario(input_path: Path, output_dir: Path, mode: str, backend: str, debug: bool = False):
     """Import and run scanario processing."""
     # Import here to avoid loading heavy deps on worker startup
-    import scanario
+    from scanario import main as scanario
     import cv2
     
     img = cv2.imread(str(input_path))
@@ -102,10 +99,10 @@ def create_pdf(self, job_id: str, page_specs: list, mode: str, backend: str, deb
     
     page_specs: list of dicts with 'type' ('file' or 'job_id') and 'value'
     """
-    from pdf_utils import create_pdf_from_images, collect_pages
-    from storage import get_results_dir, get_upload_path
+    from scanario.pdf_utils import create_pdf_from_images
+    from scanario.storage import get_results_dir, get_upload_path
     import cv2
-    import scanario
+    from scanario import main as scanario
     
     try:
         output_dir = get_results_dir(job_id)
@@ -185,7 +182,7 @@ def create_pdf(self, job_id: str, page_specs: list, mode: str, backend: str, deb
 @celery_app.task
 def cleanup_old_jobs_task():
     """Scheduled task to clean up old jobs."""
-    from storage import cleanup_old_jobs
+    from scanario.storage import cleanup_old_jobs
     count = cleanup_old_jobs()
     return {"deleted_jobs": count}
 
@@ -193,7 +190,7 @@ def cleanup_old_jobs_task():
 # Schedule cleanup task
 celery_app.conf.beat_schedule = {
     "cleanup-old-jobs": {
-        "task": "worker.cleanup_old_jobs_task",
+        "task": "scanario.worker.cleanup_old_jobs_task",
         "schedule": settings.cleanup_interval_hours * 3600,  # seconds
     },
 }

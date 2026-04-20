@@ -17,7 +17,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . .
+COPY src/ ./src/
+
+# Set PYTHONPATH for package imports
+ENV PYTHONPATH=/app/src
 
 # Create data directory
 RUN mkdir -p /app/data
@@ -26,4 +29,4 @@ RUN mkdir -p /app/data
 EXPOSE 8000
 
 # Default command (can be overridden in docker-compose)
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "scanario.api:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -2,6 +2,7 @@
 """Simple test script for the Scanario API."""
 
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -9,11 +10,16 @@ from pathlib import Path
 import requests
 
 
-def wait_for_job(base_url: str, job_id: str, timeout: int = 120) -> dict:
+def auth_headers(api_key: str | None) -> dict:
+    key = api_key or os.environ.get("SCANARIO_API_KEY", "")
+    return {"X-API-Key": key} if key else {}
+
+
+def wait_for_job(base_url: str, job_id: str, headers: dict, timeout: int = 120) -> dict:
     """Poll job status until complete or timeout."""
     start = time.time()
     while time.time() - start < timeout:
-        resp = requests.get(f"{base_url}/jobs/{job_id}")
+        resp = requests.get(f"{base_url}/jobs/{job_id}", headers=headers)
         resp.raise_for_status()
         data = resp.json()
         
@@ -37,22 +43,24 @@ def test_scan(args):
         print(f"Image not found: {image_path}")
         sys.exit(1)
     
+    headers = auth_headers(args.api_key)
+
     # Upload
     print(f"Uploading {image_path.name}...")
     print(f"  mode={args.mode}, backend={args.backend}, debug={args.debug}")
     with open(image_path, "rb") as f:
         files = {"file": (image_path.name, f, "image/jpeg")}
         data = {"mode": args.mode, "backend": args.backend, "debug": str(args.debug).lower()}
-        resp = requests.post(f"{args.url}/scan", files=files, data=data)
-    
+        resp = requests.post(f"{args.url}/scan", files=files, data=data, headers=headers)
+
     resp.raise_for_status()
     job = resp.json()
     job_id = job["job_id"]
     print(f"Job created: {job_id}")
-    
+
     # Wait for completion
     print("Waiting for processing...")
-    result = wait_for_job(args.url, job_id)
+    result = wait_for_job(args.url, job_id, headers)
     
     print(f"\nCompleted! Generated files:")
     for f in result["files"]:
@@ -66,7 +74,7 @@ def test_scan(args):
         
         for filename in result["files"]:
             url = f"{args.url}/images/{job_id}/{filename}"
-            resp = requests.get(url)
+            resp = requests.get(url, headers=headers)
             resp.raise_for_status()
             
             out_path = out_dir / f"{job_id}_{filename}"
@@ -114,8 +122,9 @@ def test_pdf(args):
         for spec in args.page_order:
             data.setdefault("page_order", []).append(spec)
     
+    headers = auth_headers(args.api_key)
     try:
-        resp = requests.post(f"{args.url}/pdf", files=files, data=data)
+        resp = requests.post(f"{args.url}/pdf", files=files, data=data, headers=headers)
         resp.raise_for_status()
     finally:
         for _, (_, f, _) in files:
@@ -128,7 +137,7 @@ def test_pdf(args):
     
     # Wait for completion
     print("Waiting for PDF creation...")
-    result = wait_for_job(args.url, job_id)
+    result = wait_for_job(args.url, job_id, headers)
     
     print(f"\nCompleted! Generated files:")
     for f in result["files"]:
@@ -140,7 +149,7 @@ def test_pdf(args):
         out_dir.mkdir(parents=True, exist_ok=True)
         
         pdf_url = f"{args.url}/images/{job_id}/output.pdf"
-        resp = requests.get(pdf_url)
+        resp = requests.get(pdf_url, headers=headers)
         if resp.status_code == 200:
             out_path = out_dir / f"{job_id}_output.pdf"
             out_path.write_bytes(resp.content)
@@ -160,6 +169,7 @@ def main():
     scan_parser = subparsers.add_parser("scan", help="Test single document scan")
     scan_parser.add_argument("image", help="Path to image file")
     scan_parser.add_argument("--url", default="http://localhost:8000", help="API base URL")
+    scan_parser.add_argument("--api-key", default=None, help="API key (or set SCANARIO_API_KEY env var)")
     scan_parser.add_argument("--mode", default="gray", choices=["gray", "archive", "color"], help="Enhancement mode")
     scan_parser.add_argument("--backend", default="auto", choices=["auto", "nano", "rembg"], help="Processing backend")
     scan_parser.add_argument("--debug", action="store_true", help="Save debug images")
@@ -170,6 +180,7 @@ def main():
     pdf_parser = subparsers.add_parser("pdf", help="Test PDF creation")
     pdf_parser.add_argument("images", nargs="*", help="Image files to include")
     pdf_parser.add_argument("--url", default="http://localhost:8000", help="API base URL")
+    pdf_parser.add_argument("--api-key", default=None, help="API key (or set SCANARIO_API_KEY env var)")
     pdf_parser.add_argument("--mode", default="gray", choices=["gray", "archive", "color"], help="Enhancement mode")
     pdf_parser.add_argument("--backend", default="auto", choices=["auto", "nano", "rembg"], help="Processing backend")
     pdf_parser.add_argument("--debug", action="store_true", help="Save debug images")

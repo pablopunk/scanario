@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 from uuid import uuid4
 
-from config import get_settings
+from scanario.config import get_settings
 
 
 def get_data_dir() -> Path:

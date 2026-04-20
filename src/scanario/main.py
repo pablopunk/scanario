@@ -939,7 +939,7 @@ def cmd_scan(args):
 
 def cmd_pdf(args):
     """Handle the pdf subcommand."""
-    from pdf_utils import create_pdf_from_images, collect_pages
+    from scanario.pdf_utils import create_pdf_from_images, collect_pages
     
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1008,10 +1008,52 @@ def cmd_pdf(args):
         temp_path.unlink(missing_ok=True)
 
 
+def cmd_auth(args):
+    """Manage API keys (requires Redis to be reachable)."""
+    try:
+        from scanario import auth
+    except ImportError as exc:
+        print(f"Error: could not load auth module: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    action = args.auth_action
+    if action == "create":
+        try:
+            key = auth.create_key(label=args.label or "")
+        except Exception as exc:
+            print(f"Error: could not reach Redis ({exc}).", file=sys.stderr)
+            print("Make sure SCANARIO_REDIS_URL points at a running Redis.", file=sys.stderr)
+            sys.exit(1)
+        print("✅ New API key created. Save it now – it will NOT be shown again:\n")
+        print(f"   {key}\n")
+        print("Send it on every request as either:")
+        print("  X-API-Key: <key>")
+        print("  Authorization: Bearer <key>")
+        return
+
+    if action == "list":
+        keys = auth.list_keys()
+        if not keys:
+            print("No API keys yet. Create one with: scanario auth create")
+            return
+        print(f"{'PREFIX':<20}  {'CREATED':<30}  LABEL")
+        for k in keys:
+            print(f"{k.prefix:<20}  {k.created_at:<30}  {k.label}")
+        return
+
+    if action == "revoke":
+        n = auth.revoke_by_prefix(args.prefix)
+        print(f"Revoked {n} key(s).")
+        return
+
+    print("Unknown auth action", file=sys.stderr)
+    sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="scanario – document corner detector and PDF creator")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Scan command
     scan_parser = subparsers.add_parser("scan", help="Scan a single document")
     scan_parser.add_argument("input", help="Input image path")
@@ -1019,7 +1061,7 @@ def main():
     scan_parser.add_argument("--mode", choices=["gray", "archive", "color"], default="gray", help="Enhancement mode")
     scan_parser.add_argument("--backend", choices=["auto", "nano", "rembg"], default="auto", help="Isolation backend")
     scan_parser.add_argument("--debug", action="store_true", help="Save intermediate debug images")
-    
+
     # PDF command
     pdf_parser = subparsers.add_parser("pdf", help="Create PDF from multiple images")
     pdf_parser.add_argument("output", help="Output PDF path")
@@ -1029,13 +1071,27 @@ def main():
     pdf_parser.add_argument("--debug", action="store_true", help="Save intermediate debug images")
     pdf_parser.add_argument("--dpi", type=int, default=300, help="PDF resolution in DPI")
     pdf_parser.add_argument("--process", action="store_true", help="Re-run the scan pipeline on each input file (default: include files as-is)")
-    
+
+    # Auth command
+    auth_parser = subparsers.add_parser("auth", help="Manage API keys")
+    auth_sub = auth_parser.add_subparsers(dest="auth_action", required=True)
+
+    auth_create = auth_sub.add_parser("create", help="Create a new API key")
+    auth_create.add_argument("--label", help="Optional label for this key")
+
+    auth_sub.add_parser("list", help="List stored API keys (prefixes only)")
+
+    auth_revoke = auth_sub.add_parser("revoke", help="Revoke keys by prefix")
+    auth_revoke.add_argument("prefix", help="Full key or any prefix (e.g. 'sk_abc123')")
+
     args = parser.parse_args()
-    
+
     if args.command == "scan":
         cmd_scan(args)
     elif args.command == "pdf":
         cmd_pdf(args)
+    elif args.command == "auth":
+        cmd_auth(args)
     else:
         parser.print_help()
         sys.exit(1)

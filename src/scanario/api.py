@@ -1,19 +1,22 @@
 from typing import Optional
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
-from config import get_settings
-from storage import (
+from scanario.auth import verify_key
+from scanario.config import get_settings
+from scanario.job_state import delete_task_id, resolve_status, set_task_id
+from scanario.storage import (
     create_job,
     delete_job,
     get_result_files,
     get_result_path,
     get_results_dir,
+    get_upload_path,
     save_upload,
 )
-from worker import celery_app, process_scan, create_pdf
+from scanario.worker import celery_app, create_pdf, process_scan
 
 app = FastAPI(
     title="Scanario API",
@@ -24,6 +27,51 @@ app = FastAPI(
 settings = get_settings()
 
 
+# ---------------------------------------------------------------------------
+# Auth
+# ---------------------------------------------------------------------------
+
+AUTH_HINT = (
+    "Create one with:\n"
+    "  docker compose exec api python -m scanario.main auth create\n"
+    "Then send it as 'X-API-Key: <your-key>' or 'Authorization: Bearer <your-key>'."
+)
+
+
+def _extract_api_key(
+    x_api_key: Optional[str],
+    authorization: Optional[str],
+) -> Optional[str]:
+    if x_api_key:
+        return x_api_key.strip()
+    if authorization:
+        parts = authorization.strip().split(None, 1)
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            return parts[1].strip()
+    return None
+
+
+async def require_api_key(
+    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+    authorization: Optional[str] = Header(default=None),
+):
+    key = _extract_api_key(x_api_key, authorization)
+    if not verify_key(key):
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error": "missing_or_invalid_api_key",
+                "message": "This endpoint requires a valid API key.",
+                "hint": AUTH_HINT,
+            },
+        )
+    return key
+
+
+# ---------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------
+
 class ScanResponse(BaseModel):
     job_id: str
     status: str
@@ -32,7 +80,8 @@ class ScanResponse(BaseModel):
 
 class JobStatus(BaseModel):
     job_id: str
-    status: str  # pending, processing, completed, failed
+    status: str  # pending, processing, completed, failed, unknown
+    error: Optional[str] = None
     mode: Optional[str] = None
     backend: Optional[str] = None
     debug: bool = False
@@ -47,30 +96,36 @@ class PDFResponse(BaseModel):
     pages: int = 0
 
 
+# ---------------------------------------------------------------------------
+# Public
+# ---------------------------------------------------------------------------
+
 @app.get("/health")
 async def health():
-    """Health check endpoint."""
     return {"status": "ok", "version": "1.0.0"}
 
 
-@app.post("/scan", response_model=ScanResponse)
+# ---------------------------------------------------------------------------
+# Gated routes (all require_api_key)
+# ---------------------------------------------------------------------------
+
+@app.post("/scan", response_model=ScanResponse, dependencies=[Depends(require_api_key)])
 async def scan_document(
     file: UploadFile = File(...),
     mode: str = settings.default_mode,
     backend: str = settings.default_backend,
     debug: bool = False,
 ):
-    """Upload an image and start a scan job."""
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(400, "File must be an image")
-    
+
     job_id = create_job()
     data = await file.read()
     save_upload(job_id, data)
-    
-    # Queue the task
+
     task = process_scan.delay(job_id, mode, backend, debug)
-    
+    set_task_id(job_id, task.id)
+
     return ScanResponse(
         job_id=job_id,
         status="pending",
@@ -78,133 +133,107 @@ async def scan_document(
     )
 
 
-@app.get("/jobs/{job_id}", response_model=JobStatus)
+@app.get("/jobs/{job_id}", response_model=JobStatus, dependencies=[Depends(require_api_key)])
 async def get_job_status(job_id: str):
-    """Get status and results of a job."""
-    # Check if results exist (completed)
     result_files = get_result_files(job_id)
-    
-    if result_files:
-        return JobStatus(
-            job_id=job_id,
-            status="completed",
-            files=result_files,
-        )
-    
-    # Check Celery task status
-    # Note: We don't store task IDs, so we infer from file existence
-    # For a production app, we'd store job state in Redis/DB
-    from storage import get_upload_path
     upload_path = get_upload_path(job_id)
-    if not upload_path.exists() and not result_files:
+    has_results = bool(result_files)
+
+    if not has_results and not upload_path.exists():
         raise HTTPException(404, "Job not found")
-    
+
+    info = resolve_status(job_id, has_results)
+
     return JobStatus(
         job_id=job_id,
-        status="processing",
-        files=[],
+        status=info["status"],
+        error=info["error"],
+        files=result_files,
     )
 
 
-@app.get("/images/{job_id}/{filename}")
+@app.get("/images/{job_id}/{filename}", dependencies=[Depends(require_api_key)])
 async def get_image(job_id: str, filename: str):
-    """Serve a result image."""
     path = get_result_path(job_id, filename)
     if path is None:
         raise HTTPException(404, "Image not found")
     return FileResponse(path)
 
 
-@app.delete("/jobs/{job_id}")
+@app.delete("/jobs/{job_id}", dependencies=[Depends(require_api_key)])
 async def delete_job_endpoint(job_id: str):
-    """Delete a job and all its data."""
     deleted = delete_job(job_id)
     if not deleted:
         raise HTTPException(404, "Job not found")
+    delete_task_id(job_id)
     return {"status": "deleted", "job_id": job_id}
 
 
-@app.get("/jobs")
+@app.get("/jobs", dependencies=[Depends(require_api_key)])
 async def list_jobs():
-    """List recent jobs (basic implementation)."""
     results_base = get_results_dir("").parent
     if not results_base.exists():
         return {"jobs": []}
-    
+
     jobs = []
     for job_dir in results_base.iterdir():
         if job_dir.is_dir():
             files = get_result_files(job_dir.name)
-            status = "completed" if files else "processing"
-            jobs.append({
-                "job_id": job_dir.name,
-                "status": status,
-                "files": files,
-            })
-    
+            info = resolve_status(job_dir.name, bool(files))
+            jobs.append(
+                {
+                    "job_id": job_dir.name,
+                    "status": info["status"],
+                    "error": info["error"],
+                    "files": files,
+                }
+            )
+
     return {"jobs": sorted(jobs, key=lambda x: x["job_id"], reverse=True)[:50]}
 
 
-@app.post("/pdf", response_model=PDFResponse)
+@app.post("/pdf", response_model=PDFResponse, dependencies=[Depends(require_api_key)])
 async def create_pdf_endpoint(
     files: list[UploadFile] = File(default=[]),
     existing_job_ids: list[str] = [],
-    page_order: list[str] = [],  # ["file:0", "job:abc123", "file:1"]
+    page_order: list[str] = [],
     mode: str = settings.default_mode,
     backend: str = settings.default_backend,
     debug: bool = False,
 ):
-    """Create a PDF from multiple images.
-    
-    - files: New images to process and include
-    - existing_job_ids: IDs of existing jobs to include outputs from
-    - page_order: Optional ordering like ["file:0", "job:job_id", "file:1"]
-    """
-    from storage import save_upload, get_upload_path
-    import shutil
-    
     job_id = create_job()
-    
-    # Save uploaded files
-    file_mapping = {}  # index -> saved path
+
+    file_mapping: dict[int, str] = {}
     for i, file in enumerate(files):
         if file.content_type and file.content_type.startswith("image/"):
             data = await file.read()
-            # Save to a temp location within job dir
             upload_path = get_upload_path(job_id).parent / f"upload_{i}.jpg"
             upload_path.parent.mkdir(parents=True, exist_ok=True)
             upload_path.write_bytes(data)
             file_mapping[i] = str(upload_path)
-    
-    # Build page specs
+
     page_specs = []
-    
     if page_order:
-        # Use explicit ordering
         for spec in page_order:
             if spec.startswith("file:"):
                 idx = int(spec.split(":")[1])
                 if idx in file_mapping:
                     page_specs.append({"type": "file", "path": file_mapping[idx]})
             elif spec.startswith("job:"):
-                job_id_ref = spec.split(":", 1)[1]
-                page_specs.append({"type": "job_id", "value": job_id_ref})
+                page_specs.append({"type": "job_id", "value": spec.split(":", 1)[1]})
     else:
-        # Default order: all new files first, then existing jobs
         for idx, path in sorted(file_mapping.items()):
             page_specs.append({"type": "file", "path": path})
         for existing_id in existing_job_ids:
             page_specs.append({"type": "job_id", "value": existing_id})
-    
+
     if not page_specs:
-        # Cleanup and error
-        from storage import delete_job
         delete_job(job_id)
         raise HTTPException(400, "No valid images or job IDs provided")
-    
-    # Queue PDF creation task
+
     task = create_pdf.delay(job_id, page_specs, mode, backend, debug)
-    
+    set_task_id(job_id, task.id)
+
     return PDFResponse(
         job_id=job_id,
         status="pending",
@@ -215,4 +244,5 @@ async def create_pdf_endpoint(
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host=settings.api_host, port=settings.api_port)

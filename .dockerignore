@@ -39,7 +39,7 @@ data/
 results/
 
 # Tests (optional - remove if you want tests in image)
-tests/
+src/tests/
 
 # Git
 .git/

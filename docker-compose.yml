@@ -21,37 +21,40 @@ services:
       - SCANARIO_DATA_DIR=/app/data
       - SCANARIO_MAX_AGE_DAYS=7
       - SCANARIO_CLEANUP_INTERVAL_HOURS=24
+      - PYTHONPATH=/app/src
     volumes:
       - scanario_data:/app/data
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
-    command: uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn scanario.api:app --host 0.0.0.0 --port 8000 --reload
 
   worker:
     build: .
     environment:
       - SCANARIO_REDIS_URL=redis://redis:6379/0
       - SCANARIO_DATA_DIR=/app/data
+      - PYTHONPATH=/app/src
     volumes:
       - scanario_data:/app/data
     depends_on:
       - redis
     restart: unless-stopped
-    command: celery -A worker.celery_app worker --loglevel=info --concurrency=2
+    command: celery -A scanario.worker.celery_app worker --loglevel=info --concurrency=2
 
   beat:
     build: .
     environment:
       - SCANARIO_REDIS_URL=redis://redis:6379/0
       - SCANARIO_DATA_DIR=/app/data
+      - PYTHONPATH=/app/src
     volumes:
       - scanario_data:/app/data
     depends_on:
       - redis
     restart: unless-stopped
-    command: celery -A worker.celery_app beat --loglevel=info
+    command: celery -A scanario.worker.celery_app beat --loglevel=info
 
 volumes:
   redis_data:
