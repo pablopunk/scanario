@@ -6,38 +6,102 @@
     <title>scanario</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-page: #f5f5f5;
+            --bg-card: white;
+            --bg-input: white;
+            --bg-dropzone-hover: #f0f7ff;
+            --text-primary: #333;
+            --text-secondary: #555;
+            --text-muted: #666;
+            --text-hint: #999;
+            --border-default: #ddd;
+            --border-card: transparent;
+            --border-dropzone: #ccc;
+            --border-dropzone-hover: #007bff;
+            --border-tab: #ddd;
+            --border-tab-hover: #007bff;
+            --accent-primary: #007bff;
+            --accent-primary-hover: #0056b3;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.15);
+            --status-pending-bg: #fff3cd;
+            --status-pending-text: #856404;
+            --status-processing-bg: #cce5ff;
+            --status-processing-text: #004085;
+            --status-completed-bg: #d4edda;
+            --status-completed-text: #155724;
+            --status-error-bg: #f8d7da;
+            --status-error-text: #721c24;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-page: #000000;
+                --bg-card: #141414;
+                --bg-input: #141414;
+                --bg-dropzone-hover: rgba(250, 255, 105, 0.05);
+                --text-primary: #ffffff;
+                --text-secondary: #a0a0a0;
+                --text-muted: #a0a0a0;
+                --text-hint: #585858;
+                --border-default: rgba(65, 65, 65, 0.8);
+                --border-card: rgba(65, 65, 65, 0.8);
+                --border-dropzone: rgba(65, 65, 65, 0.8);
+                --border-dropzone-hover: #faff69;
+                --border-tab: rgba(65, 65, 65, 0.8);
+                --border-tab-hover: #faff69;
+                --accent-primary: #166534;
+                --accent-primary-hover: #14572f;
+                --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
+                --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.4);
+                --status-pending-bg: rgba(255, 243, 205, 0.1);
+                --status-pending-text: #f4f692;
+                --status-processing-bg: rgba(204, 229, 255, 0.1);
+                --status-processing-text: #faff69;
+                --status-completed-bg: rgba(212, 237, 218, 0.1);
+                --status-completed-text: #4ade80;
+                --status-error-bg: rgba(248, 215, 218, 0.1);
+                --status-error-text: #f87171;
+            }
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background: #f5f5f5;
-            color: #333;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            transition: background 0.2s, color 0.2s;
         }
-        h1 { font-size: 24px; margin-bottom: 20px; }
+        h1 { font-size: 24px; margin-bottom: 20px; color: var(--text-primary); }
         .section {
-            background: white;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-card);
+            transition: background 0.2s, border-color 0.2s;
         }
         label {
             display: block;
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 6px;
-            color: #555;
+            color: var(--text-secondary);
         }
         input[type="text"], input[type="password"] {
             width: 100%;
             padding: 10px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-default);
             border-radius: 6px;
             font-size: 14px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
         }
         .dropzone {
-            border: 2px dashed #ccc;
+            border: 2px dashed var(--border-dropzone);
             border-radius: 8px;
             padding: 40px;
             text-align: center;
@@ -45,11 +109,11 @@
             transition: all 0.2s;
         }
         .dropzone:hover, .dropzone.dragover {
-            border-color: #007bff;
-            background: #f0f7ff;
+            border-color: var(--border-dropzone-hover);
+            background: var(--bg-dropzone-hover);
         }
-        .dropzone p { color: #666; margin: 8px 0; }
-        .dropzone .hint { font-size: 12px; color: #999; }
+        .dropzone p { color: var(--text-muted); margin: 8px 0; }
+        .dropzone .hint { font-size: 12px; color: var(--text-hint); }
         input[type="file"] { display: none; }
         .mode-tabs {
             display: flex;
@@ -59,9 +123,10 @@
         .mode-tab {
             flex: 1;
             padding: 12px 8px;
-            border: 2px solid #ddd;
+            border: 2px solid var(--border-tab);
             border-radius: 8px;
-            background: white;
+            background: var(--bg-input);
+            color: var(--text-primary);
             cursor: pointer;
             font-size: 13px;
             font-weight: 500;
@@ -73,12 +138,12 @@
             gap: 6px;
         }
         .mode-tab:hover {
-            border-color: #007bff;
-            background: #f0f7ff;
+            border-color: var(--border-tab-hover);
+            background: var(--bg-dropzone-hover);
         }
         .mode-tab.active {
-            border-color: #007bff;
-            background: #007bff;
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
             color: white;
         }
         .tab-icon {
@@ -86,7 +151,7 @@
             height: 28px;
         }
         button {
-            background: #007bff;
+            background: var(--accent-primary);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -94,10 +159,12 @@
             font-size: 16px;
             cursor: pointer;
             width: 100%;
+            transition: background 0.2s;
         }
-        button:hover { background: #0056b3; }
+        button:hover { background: var(--accent-primary-hover); }
         button:disabled {
-            background: #ccc;
+            background: var(--border-default);
+            color: var(--text-hint);
             cursor: not-allowed;
         }
         .status {
@@ -105,11 +172,12 @@
             border-radius: 6px;
             margin-top: 16px;
             font-size: 14px;
+            border: 1px solid var(--border-default);
         }
-        .status.pending { background: #fff3cd; color: #856404; }
-        .status.processing { background: #cce5ff; color: #004085; }
-        .status.completed { background: #d4edda; color: #155724; }
-        .status.error { background: #f8d7da; color: #721c24; }
+        .status.pending { background: var(--status-pending-bg); color: var(--status-pending-text); }
+        .status.processing { background: var(--status-processing-bg); color: var(--status-processing-text); }
+        .status.completed { background: var(--status-completed-bg); color: var(--status-completed-text); }
+        .status.error { background: var(--status-error-bg); color: var(--status-error-text); }
         .results {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -117,10 +185,12 @@
             margin-top: 20px;
         }
         .result-item {
-            background: white;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-card);
+            transition: background 0.2s, border-color 0.2s;
         }
         .result-item img {
             width: 100%;
@@ -131,7 +201,7 @@
         .result-item .label {
             padding: 10px;
             font-size: 13px;
-            color: #555;
+            color: var(--text-secondary);
             text-align: center;
         }
         .result-item a {
@@ -145,16 +215,17 @@
             gap: 12px;
         }
         .history-item {
-            background: white;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-card);
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: transform 0.1s, background 0.2s, border-color 0.2s;
         }
         .history-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            box-shadow: var(--shadow-card-hover);
         }
         .history-item img {
             width: 100%;
@@ -165,14 +236,14 @@
         .history-item .meta {
             padding: 8px;
             font-size: 11px;
-            color: #666;
+            color: var(--text-secondary);
         }
         .history-item .time {
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
         }
         .error {
-            color: #dc3545;
+            color: var(--status-error-text);
             font-size: 14px;
             margin-top: 8px;
         }
@@ -184,7 +255,7 @@
     <div class="section">
         <label for="apiKey">API Key</label>
         <input type="password" id="apiKey" placeholder="sk_...">
-        <p class="hint" style="font-size: 12px; color: #666; margin-top: 6px;">
+        <p class="hint" style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
             Create one with: <code>docker compose exec api python -m scanario.main auth create</code>
         </p>
     </div>
@@ -196,7 +267,7 @@
             <input type="file" id="fileInput" accept="image/*">
         </div>
         
-        <div id="fileInfo" style="margin-top: 12px; font-size: 14px; color: #555; display: none;">
+        <div id="fileInfo" style="margin-top: 12px; font-size: 14px; color: var(--text-secondary); display: none;">
             Selected: <strong id="fileName"></strong>
         </div>
     </div>
@@ -344,11 +415,12 @@
             }
             
             historySection.style.display = 'block';
+            const placeholderBg = window.matchMedia('(prefers-color-scheme: dark)').matches ? '#141414' : '#f0f0f0';
             historyGrid.innerHTML = history.map(item => {
                 const imageUrl = apiKey ? `/images/${item.jobId}/${item.thumbnail}?api_key=${encodeURIComponent(apiKey)}` : '';
                 return `
                     <div class="history-item" data-jobid="${item.jobId}">
-                        ${imageUrl ? `<img src="${imageUrl}" alt="" loading="lazy">` : '<div style="height:100px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:24px">📄</div>'}
+                        ${imageUrl ? `<img src="${imageUrl}" alt="" loading="lazy">` : `<div style="height:100px;background:${placeholderBg};display:flex;align-items:center;justify-content:center;font-size:24px">📄</div>`}
                         <div class="meta">
                             <div class="time">${formatTimeAgo(item.timestamp)}</div>
                             <div>${item.mode || 'gray'}</div>
@@ -424,15 +496,17 @@
             }
         });
 
-        // Load history on page load
-        apiKeyInput.addEventListener('input', renderHistory);
-        renderHistory();
-
-        // Load saved API key
+        // Load saved API key first, then render history
         apiKeyInput.value = localStorage.getItem('scanarioApiKey') || '';
         apiKeyInput.addEventListener('change', () => {
             localStorage.setItem('scanarioApiKey', apiKeyInput.value);
         });
+        
+        // Re-render history when API key changes (so images load)
+        apiKeyInput.addEventListener('input', renderHistory);
+        
+        // Load history on page load (now with API key available)
+        renderHistory();
 
         // Dropzone handling
         dropzone.addEventListener('click', () => fileInput.click());
