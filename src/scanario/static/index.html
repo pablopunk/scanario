@@ -51,13 +51,31 @@
         .dropzone p { color: #666; margin: 8px 0; }
         .dropzone .hint { font-size: 12px; color: #999; }
         input[type="file"] { display: none; }
-        select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .mode-tab {
+            flex: 1;
+            padding: 10px 16px;
+            border: 2px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
             background: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .mode-tab:hover {
+            border-color: #007bff;
+            background: #f0f7ff;
+        }
+        .mode-tab.active {
+            border-color: #007bff;
+            background: #007bff;
+            color: white;
         }
         button {
             background: #007bff;
@@ -176,12 +194,12 @@
     </div>
 
     <div class="section">
-        <label for="mode">Enhancement Mode</label>
-        <select id="mode">
-            <option value="gray" selected>Gray (default)</option>
-            <option value="archive">Archive</option>
-            <option value="color">Color</option>
-        </select>
+        <label>Enhancement Mode</label>
+        <div class="mode-tabs" id="modeTabs">
+            <div class="mode-tab active" data-mode="gray">Gray</div>
+            <div class="mode-tab" data-mode="archive">Archive</div>
+            <div class="mode-tab" data-mode="color">Color</div>
+        </div>
     </div>
 
     <button id="scanBtn" disabled>Upload & Scan</button>
@@ -204,7 +222,17 @@
         const fileInfo = document.getElementById('fileInfo');
         const fileName = document.getElementById('fileName');
         const scanBtn = document.getElementById('scanBtn');
-        const modeSelect = document.getElementById('mode');
+        const modeTabs = document.getElementById('modeTabs');
+        let selectedMode = 'gray';
+        
+        // Mode tab click handlers
+        modeTabs.querySelectorAll('.mode-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                modeTabs.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                selectedMode = tab.dataset.mode;
+            });
+        });
         const statusDiv = document.getElementById('status');
         const resultsDiv = document.getElementById('results');
         const historySection = document.getElementById('historySection');
@@ -404,7 +432,7 @@
                 if (data.status === 'completed') {
                     statusDiv.textContent = '✅ Scan complete!';
                     showResults(jobId, data.files, apiKey);
-                    addToHistory(jobId, data.files, modeSelect.value);
+                    addToHistory(jobId, data.files, selectedMode);
                     scanBtn.disabled = false;
                     scanBtn.textContent = 'Upload & Scan';
                     return;
@@ -480,7 +508,7 @@
             try {
                 const formData = new FormData();
                 formData.append('file', selectedFile);
-                formData.append('mode', modeSelect.value);
+                formData.append('mode', selectedMode);
                 formData.append('backend', 'auto');
                 formData.append('debug', 'false');
 
