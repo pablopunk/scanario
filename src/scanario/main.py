@@ -315,20 +315,50 @@ def fit_quad(mask: np.ndarray):
 
     corners = np.array(corners, dtype=np.float32)
 
-    # Check if any corner is way outside the image (line intersection failed)
-    # In that case, find corners on the contour closest to where lines intersect
-    if np.any(corners[:, 0] < -0.1 * W) or np.any(corners[:, 0] > 1.1 * W) or \
-       np.any(corners[:, 1] < -0.1 * H) or np.any(corners[:, 1] > 1.1 * H):
-        # Find contour points closest to each intersection region
-        # Clip intersection points to image bounds first
-        clipped = np.clip(corners, [0, 0], [W-1, H-1])
-        # Find nearest contour points to clipped positions
-        hull = cv2.convexHull(contour.reshape(-1, 1, 2)).reshape(-1, 2).astype(np.float32)
-        fixed_corners = []
-        for target in clipped:
-            dists = np.linalg.norm(hull - target, axis=1)
-            fixed_corners.append(hull[np.argmin(dists)])
-        corners = np.array(fixed_corners, dtype=np.float32)
+    # If line intersections land outside the image, fall back to a polygonal hull
+    # built from in-frame contour points only. This avoids spurious vertices caused
+    # by masks leaking into the image border.
+    if np.any(corners[:, 0] < 0) or np.any(corners[:, 0] >= W) or \
+       np.any(corners[:, 1] < 0) or np.any(corners[:, 1] >= H):
+        hull = cv2.convexHull(pts.reshape(-1, 1, 2)).reshape(-1, 2).astype(np.float32)
+        peri = cv2.arcLength(hull.reshape(-1, 1, 2), True)
+        approx = cv2.approxPolyDP(hull.reshape(-1, 1, 2), 0.01 * peri, True).reshape(-1, 2).astype(np.float32)
+
+        border_margin = max(8.0, 0.01 * max(H, W))
+        keep = (
+            (approx[:, 0] > border_margin)
+            & (approx[:, 0] < W - 1 - border_margin)
+            & (approx[:, 1] > border_margin)
+            & (approx[:, 1] < H - 1 - border_margin)
+        )
+        candidates = approx[keep]
+        if len(candidates) < 4:
+            candidates = approx
+
+        if len(candidates) == 4:
+            corners = candidates
+        elif len(candidates) > 4:
+            import itertools
+            best_quad = None
+            best_score = -1e9
+            for combo in itertools.combinations(range(len(candidates)), 4):
+                quad = order_points(candidates[list(combo)])
+                if cv2.contourArea(quad.astype(np.float32)) < 100:
+                    continue
+                score = quad_iou_score(mask, quad)
+                # Slightly prefer quads whose corners are away from the border.
+                d = np.minimum.reduce([
+                    quad[:, 0],
+                    quad[:, 1],
+                    (W - 1) - quad[:, 0],
+                    (H - 1) - quad[:, 1],
+                ])
+                score += 0.0005 * float(np.mean(d))
+                if score > best_score:
+                    best_score = score
+                    best_quad = quad
+            if best_quad is not None:
+                corners = best_quad
 
     return order_points(corners)
 
@@ -588,8 +618,10 @@ def run_backend(name: str, small: np.ndarray, debug_dir: Path = None):
     if quad is None:
         return None
     quad = maybe_correct_near_frontal_left_edge(mask, quad)
-    score = quad_iou_score(mask, quad)
-    print(f"      quad/mask IoU: {score:.4f}  perspective_strength={perspective_strength(quad):.3f}")
+    mask_score = quad_iou_score(mask, quad)
+    edge_score = quad_edge_support_score(small, quad)
+    score = mask_score + 0.01 * edge_score
+    print(f"      quad/mask IoU: {mask_score:.4f}  edge_score={edge_score:.2f}  perspective_strength={perspective_strength(quad):.3f}")
 
     if debug_dir:
         prefix = f"debug_{name}"
@@ -601,7 +633,7 @@ def run_backend(name: str, small: np.ndarray, debug_dir: Path = None):
             cv2.circle(dbg, tuple(np.round(p).astype(int)), 5, (0, 255, 255), -1)
         cv2.imwrite(str(debug_dir / f"{prefix}_fit.png"), dbg)
 
-    return {"name": name, "isolated": isolated, "mask": mask, "quad": quad, "score": score, "drift": drift}
+    return {"name": name, "isolated": isolated, "mask": mask, "quad": quad, "score": score, "mask_score": mask_score, "edge_score": edge_score, "drift": drift}
 
 
 def perspective_strength(quad: np.ndarray) -> float:
@@ -614,6 +646,54 @@ def perspective_strength(quad: np.ndarray) -> float:
     width_skew = abs(top - bot) / max(top, bot, 1e-6)
     height_skew = abs(left - right) / max(left, right, 1e-6)
     return float(max(width_skew, height_skew))
+
+
+def quad_edge_support_score(img_bgr: np.ndarray, quad: np.ndarray) -> float:
+    """Score a quad by how well its 4 sides align to real edges in the original image.
+
+    This helps reject backends whose mask/quad pair is self-consistent but geometrically wrong.
+    """
+    q = order_points(quad)
+    L, chroma, grad = build_feature_maps(img_bgr)
+    center = q.mean(axis=0)
+    score = 0.0
+    lengths = []
+    for p0, p1 in [(q[0], q[1]), (q[1], q[2]), (q[2], q[3]), (q[3], q[0])]:
+        res = refine_side_on_original(L, chroma, grad, p0, p1, center, band_px=max(10.0, np.linalg.norm(p1 - p0) / 60.0))
+        if res is None:
+            continue
+        d_best, mid_best = res
+        length = float(np.linalg.norm(p1 - p0))
+        lengths.append(length)
+        n = np.array([-d_best[1], d_best[0]], dtype=np.float32)
+        if np.dot(center - mid_best, n) < 0:
+            n *= -1
+        alphas = np.linspace(0.08, 0.92, max(80, int(length / 8))).astype(np.float32)
+        start = mid_best - d_best * (length / 2)
+        pts = start[None, :] + (alphas[:, None] * length) * d_best[None, :]
+        edge_pts = pts
+        inside_pts = pts + n[None, :] * 10.0
+        outside_pts = pts - n[None, :] * 14.0
+        g = sample_channel(grad, edge_pts)
+        l_in = sample_channel(L, inside_pts)
+        l_out = sample_channel(L, outside_pts)
+        c_in = sample_channel(chroma, inside_pts)
+        c_out = sample_channel(chroma, outside_pts)
+        brightness = float(np.median(l_in - l_out))
+        chroma_gain = float(np.median(c_out - c_in))
+        edge = float(np.median(g))
+        support = float(np.mean((l_in > l_out + 1.5).astype(np.float32)))
+        score += edge * 0.7 + brightness * 0.8 + chroma_gain * 0.25 + support * 20.0
+
+    area = abs(cv2.contourArea(q.astype(np.float32)))
+    img_area = img_bgr.shape[0] * img_bgr.shape[1]
+    area_ratio = area / max(img_area, 1)
+    # Prefer plausible page-sized quads, but softly.
+    score -= 25.0 * abs(area_ratio - 0.55)
+    # Slight preference for longer, stable edges.
+    if lengths:
+        score += 0.002 * float(np.mean(lengths))
+    return float(score)
 
 
 def maybe_correct_near_frontal_left_edge(mask: np.ndarray, quad: np.ndarray) -> np.ndarray:
