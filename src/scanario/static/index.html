@@ -550,7 +550,7 @@
                             </div>
                             
                             <!-- Mode Selector Overlay -->
-                            <div class="mode-overlay" id="modeOverlay">
+                            <div class="mode-overlay" id="modeOverlay" style="display: none;">
                                 <div class="mode-card active" data-mode="gray">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="4" y="4" width="16" height="18" rx="2" fill="currentColor" fill-opacity="0.2"/>
@@ -1051,11 +1051,16 @@
             grid.style.display = 'grid';
             
             grid.innerHTML = history.map((item, index) => {
-                const firstJobId = item.jobIds[0];
-                const firstFile = item.files[0];
+                // Backward compat: old entries used item.jobId (singular)
+                const jobIds = item.jobIds || (item.jobId ? [item.jobId] : []);
+                const files = item.files || [];
+                if (jobIds.length === 0 || files.length === 0) return '';
+                const firstJobId = jobIds[0];
+                const firstFile = item.thumbnail || files[0];
+                const count = item.count || files.length;
                 const imageUrl = apiKey ? `/images/${firstJobId}/${firstFile}?api_key=${encodeURIComponent(apiKey)}` : '';
                 const timeAgo = formatTimeAgo(item.timestamp);
-                const badge = item.count > 1 ? `<span style="position: absolute; top: 8px; right: 8px; background: var(--accent-primary); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${item.count}</span>` : '';
+                const badge = count > 1 ? `<span style="position: absolute; top: 8px; right: 8px; background: var(--accent-primary); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${count}</span>` : '';
                 
                 return `
                     <div class="history-item" data-index="${index}">
@@ -1091,11 +1096,16 @@
             const item = history[index];
             if (!item) return;
             
-            // Load into results
-            currentResults = item.jobIds.map((jobId, i) => ({
-                jobId,
-                file: item.files[i] || item.files[0]
-            }));
+            // Backward compat
+            const jobIds = item.jobIds || (item.jobId ? [item.jobId] : []);
+            const files = item.files || [];
+            if (jobIds.length === 0) return;
+            
+            // Load into results - find enhanced file for each job
+            currentResults = jobIds.map((jobId, i) => {
+                const enhanced = files.find(f => f.includes('enhanced')) || files[i] || files[0];
+                return { jobId, file: enhanced };
+            });
             currentFileIndex = 0;
             selectedMode = item.mode;
             
