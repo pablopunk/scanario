@@ -36,6 +36,7 @@ services:
       - SCANARIO_REDIS_URL=redis://redis:6379/0
       - SCANARIO_DATA_DIR=/app/data
       - PYTHONPATH=/app/src
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - scanario_data:/app/data
     depends_on:
