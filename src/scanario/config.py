@@ -1,3 +1,5 @@
+import os
+import sys
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
@@ -31,3 +33,11 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
+
+
+def validate_gemini_api_key():
+    """Exit with error if GEMINI_API_KEY is not set."""
+    if not os.environ.get("GEMINI_API_KEY"):
+        print("❌ Error: GEMINI_API_KEY environment variable is required but not set.", file=sys.stderr)
+        print("   Get an API key at: https://ai.google.dev/gemini-api/docs/api-key", file=sys.stderr)
+        sys.exit(1)

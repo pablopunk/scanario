@@ -1149,6 +1149,10 @@ def cmd_auth(args):
 
 
 def main():
+    # Validate GEMINI_API_KEY before any processing
+    from scanario.config import validate_gemini_api_key
+    validate_gemini_api_key()
+    
     parser = argparse.ArgumentParser(description="scanario – document corner detector and PDF creator")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 

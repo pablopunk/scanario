@@ -58,15 +58,19 @@
         }
         .mode-tab {
             flex: 1;
-            padding: 10px 16px;
+            padding: 12px 8px;
             border: 2px solid #ddd;
-            border-radius: 6px;
+            border-radius: 8px;
             background: white;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             text-align: center;
             transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
         }
         .mode-tab:hover {
             border-color: #007bff;
@@ -76,6 +80,10 @@
             border-color: #007bff;
             background: #007bff;
             color: white;
+        }
+        .tab-icon {
+            width: 28px;
+            height: 28px;
         }
         button {
             background: #007bff;
@@ -196,9 +204,56 @@
     <div class="section">
         <label>Enhancement Mode</label>
         <div class="mode-tabs" id="modeTabs">
-            <div class="mode-tab active" data-mode="gray">Gray</div>
-            <div class="mode-tab" data-mode="archive">Archive</div>
-            <div class="mode-tab" data-mode="color">Color</div>
+            <div class="mode-tab active" data-mode="gray">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="4" y="4" width="16" height="18" rx="2"/>
+                    <line x1="8" y1="9" x2="16" y2="9"/>
+                    <line x1="8" y1="13" x2="16" y2="13"/>
+                    <line x1="8" y1="17" x2="12" y2="17"/>
+                    <circle cx="18" cy="18" r="2" fill="url(#grayGrad)"/>
+                    <defs>
+                        <radialGradient id="grayGrad">
+                            <stop offset="0%" stop-color="#999"/>
+                            <stop offset="100%" stop-color="#666"/>
+                        </radialGradient>
+                    </defs>
+                </svg>
+                <span>Gray</span>
+            </div>
+            <div class="mode-tab" data-mode="archive">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="4" y="4" width="16" height="18" rx="2"/>
+                    <line x1="8" y1="9" x2="16" y2="9" stroke-width="3"/>
+                    <line x1="8" y1="14" x2="16" y2="14" stroke-width="3"/>
+                    <line x1="8" y1="19" x2="12" y2="19" stroke-width="3"/>
+                </svg>
+                <span>Archive</span>
+            </div>
+            <div class="mode-tab" data-mode="color">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="4" y="4" width="16" height="18" rx="2" fill="url(#colorGrad)" fill-opacity="0.3"/>
+                    <line x1="8" y1="9" x2="16" y2="9" stroke="url(#rainbow1)" stroke-width="2"/>
+                    <line x1="8" y1="13" x2="16" y2="13" stroke="url(#rainbow2)" stroke-width="2"/>
+                    <line x1="8" y1="17" x2="12" y2="17" stroke="url(#rainbow3)" stroke-width="2"/>
+                    <defs>
+                        <linearGradient id="colorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ff6b6b"/>
+                            <stop offset="50%" stop-color="#4ecdc4"/>
+                            <stop offset="100%" stop-color="#45b7d1"/>
+                        </linearGradient>
+                        <linearGradient id="rainbow1" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#feca57"/>
+                        </linearGradient>
+                        <linearGradient id="rainbow2" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#48dbfb"/><stop offset="100%" stop-color="#1dd1a1"/>
+                        </linearGradient>
+                        <linearGradient id="rainbow3" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#5f27cd"/><stop offset="100%" stop-color="#ff9ff3"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>Color</span>
+            </div>
         </div>
     </div>
 

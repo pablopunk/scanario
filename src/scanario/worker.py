@@ -5,8 +5,11 @@ from pathlib import Path
 from celery import Celery
 from celery.signals import worker_ready
 
-from scanario.config import get_settings
+from scanario.config import get_settings, validate_gemini_api_key
 from scanario.storage import get_results_dir, get_upload_path
+
+# Validate GEMINI_API_KEY on startup
+validate_gemini_api_key()
 
 settings = get_settings()
 

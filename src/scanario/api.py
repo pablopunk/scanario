@@ -7,7 +7,10 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from scanario.auth import verify_key
-from scanario.config import get_settings
+from scanario.config import get_settings, validate_gemini_api_key
+
+# Validate GEMINI_API_KEY on startup
+validate_gemini_api_key()
 from scanario.job_state import delete_task_id, resolve_status, set_task_id
 from scanario.storage import (
     create_job,
@@ -68,10 +71,14 @@ def _extract_api_key(
 
 
 async def require_api_key(
+    request: Request,
     x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
     authorization: Optional[str] = Header(default=None),
 ):
+    # Check headers first, then query parameter (for image URLs in browser)
     key = _extract_api_key(x_api_key, authorization)
+    if not key:
+        key = request.query_params.get("api_key")
     if not verify_key(key):
         raise HTTPException(
             status_code=401,
