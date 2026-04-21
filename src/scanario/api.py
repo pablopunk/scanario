@@ -8,9 +8,6 @@ from pydantic import BaseModel
 
 from scanario.auth import verify_key
 from scanario.config import get_settings, validate_gemini_api_key
-
-# Validate GEMINI_API_KEY on startup
-validate_gemini_api_key()
 from scanario.job_state import delete_task_id, resolve_status, set_task_id
 from scanario.storage import (
     create_job,
@@ -44,6 +41,9 @@ async def root():
     return HTMLResponse(content="<h1>scanario API</h1><p>UI not found. API is at /docs</p>")
 
 settings = get_settings()
+
+# Validate GEMINI_API_KEY on startup (after settings loaded from .env)
+validate_gemini_api_key()
 
 
 # ---------------------------------------------------------------------------
