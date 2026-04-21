@@ -34,8 +34,64 @@
             --status-error-bg: #f8d7da;
             --status-error-text: #721c24;
         }
+        :root[data-theme="dark"] {
+            --bg-page: #000000;
+            --bg-card: #141414;
+            --bg-input: #141414;
+            --bg-dropzone-hover: rgba(250, 255, 105, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #a0a0a0;
+            --text-hint: #585858;
+            --border-default: rgba(65, 65, 65, 0.8);
+            --border-card: rgba(65, 65, 65, 0.8);
+            --border-dropzone: rgba(65, 65, 65, 0.8);
+            --border-dropzone-hover: #faff69;
+            --border-tab: rgba(65, 65, 65, 0.8);
+            --border-tab-hover: #faff69;
+            --accent-primary: #166534;
+            --accent-primary-hover: #14572f;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.4);
+            --status-pending-bg: rgba(255, 243, 205, 0.1);
+            --status-pending-text: #f4f692;
+            --status-processing-bg: rgba(204, 229, 255, 0.1);
+            --status-processing-text: #faff69;
+            --status-completed-bg: rgba(212, 237, 218, 0.1);
+            --status-completed-text: #4ade80;
+            --status-error-bg: rgba(248, 215, 218, 0.1);
+            --status-error-text: #f87171;
+        }
+        :root[data-theme="light"] {
+            --bg-page: #f5f5f5;
+            --bg-card: white;
+            --bg-input: white;
+            --bg-dropzone-hover: #f0f7ff;
+            --text-primary: #333;
+            --text-secondary: #555;
+            --text-muted: #666;
+            --text-hint: #999;
+            --border-default: #ddd;
+            --border-card: transparent;
+            --border-dropzone: #ccc;
+            --border-dropzone-hover: #007bff;
+            --border-tab: #ddd;
+            --border-tab-hover: #007bff;
+            --accent-primary: #007bff;
+            --accent-primary-hover: #0056b3;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.15);
+            --status-pending-bg: #fff3cd;
+            --status-pending-text: #856404;
+            --status-processing-bg: #cce5ff;
+            --status-processing-text: #004085;
+            --status-completed-bg: #d4edda;
+            --status-completed-text: #155724;
+            --status-error-bg: #f8d7da;
+            --status-error-text: #721c24;
+        }
         @media (prefers-color-scheme: dark) {
-            :root {
+            :root:not([data-theme="light"]):not([data-theme="dark"]) {
                 --bg-page: #000000;
                 --bg-card: #141414;
                 --bg-input: #141414;
@@ -72,6 +128,40 @@
             background: var(--bg-page);
             color: var(--text-primary);
             transition: background 0.2s, color 0.2s;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .theme-switcher {
+            display: flex;
+            background: var(--bg-input);
+            border: 1px solid var(--border-default);
+            border-radius: 4px;
+            padding: 2px;
+            gap: 2px;
+        }
+        .theme-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.15s;
+            width: auto;
+        }
+        .theme-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-dropzone-hover);
+        }
+        .theme-btn.active {
+            background: #faff69;
+            color: #151515;
         }
         h1 { font-size: 24px; margin-bottom: 20px; color: var(--text-primary); }
         .section {
@@ -250,7 +340,14 @@
     </style>
 </head>
 <body>
-    <h1>📄 scanario</h1>
+    <div class="header">
+        <h1>📄 scanario</h1>
+        <div class="theme-switcher" id="themeSwitcher">
+            <button class="theme-btn" data-theme="system" title="System">🖥️</button>
+            <button class="theme-btn" data-theme="light" title="Light">☀️</button>
+            <button class="theme-btn" data-theme="dark" title="Dark">🌙</button>
+        </div>
+    </div>
     
     <div class="section">
         <label for="apiKey">API Key</label>
@@ -277,51 +374,29 @@
         <div class="mode-tabs" id="modeTabs">
             <div class="mode-tab active" data-mode="gray">
                 <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="4" y="4" width="16" height="18" rx="2"/>
-                    <line x1="8" y1="9" x2="16" y2="9"/>
-                    <line x1="8" y1="13" x2="16" y2="13"/>
-                    <line x1="8" y1="17" x2="12" y2="17"/>
-                    <circle cx="18" cy="18" r="2" fill="url(#grayGrad)"/>
-                    <defs>
-                        <radialGradient id="grayGrad">
-                            <stop offset="0%" stop-color="#999"/>
-                            <stop offset="100%" stop-color="#666"/>
-                        </radialGradient>
-                    </defs>
+                    <rect x="4" y="4" width="16" height="18" rx="2" fill="#888" fill-opacity="0.3"/>
+                    <line x1="7" y1="9" x2="17" y2="9" stroke="#666" stroke-width="1.5"/>
+                    <line x1="7" y1="13" x2="17" y2="13" stroke="#666" stroke-width="1.5"/>
+                    <line x1="7" y1="17" x2="12" y2="17" stroke="#666" stroke-width="1.5"/>
                 </svg>
                 <span>Gray</span>
             </div>
             <div class="mode-tab" data-mode="archive">
                 <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="4" y="4" width="16" height="18" rx="2"/>
-                    <line x1="8" y1="9" x2="16" y2="9" stroke-width="3"/>
-                    <line x1="8" y1="14" x2="16" y2="14" stroke-width="3"/>
-                    <line x1="8" y1="19" x2="12" y2="19" stroke-width="3"/>
+                    <rect x="4" y="4" width="16" height="18" rx="2" fill="#333" fill-opacity="0.2"/>
+                    <line x1="7" y1="9" x2="17" y2="9" stroke="#222" stroke-width="2.5"/>
+                    <line x1="7" y1="14" x2="17" y2="14" stroke="#222" stroke-width="2.5"/>
+                    <line x1="7" y1="19" x2="13" y2="19" stroke="#222" stroke-width="2.5"/>
                 </svg>
                 <span>Archive</span>
             </div>
             <div class="mode-tab" data-mode="color">
                 <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="4" y="4" width="16" height="18" rx="2" fill="url(#colorGrad)" fill-opacity="0.3"/>
-                    <line x1="8" y1="9" x2="16" y2="9" stroke="url(#rainbow1)" stroke-width="2"/>
-                    <line x1="8" y1="13" x2="16" y2="13" stroke="url(#rainbow2)" stroke-width="2"/>
-                    <line x1="8" y1="17" x2="12" y2="17" stroke="url(#rainbow3)" stroke-width="2"/>
-                    <defs>
-                        <linearGradient id="colorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#ff6b6b"/>
-                            <stop offset="50%" stop-color="#4ecdc4"/>
-                            <stop offset="100%" stop-color="#45b7d1"/>
-                        </linearGradient>
-                        <linearGradient id="rainbow1" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#feca57"/>
-                        </linearGradient>
-                        <linearGradient id="rainbow2" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#48dbfb"/><stop offset="100%" stop-color="#1dd1a1"/>
-                        </linearGradient>
-                        <linearGradient id="rainbow3" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#5f27cd"/><stop offset="100%" stop-color="#ff9ff3"/>
-                        </linearGradient>
-                    </defs>
+                    <rect x="4" y="4" width="16" height="18" rx="2" fill="#ff6b6b" fill-opacity="0.2"/>
+                    <line x1="7" y1="9" x2="17" y2="9" stroke="#e74c3c" stroke-width="1.5"/>
+                    <line x1="7" y1="13" x2="17" y2="13" stroke="#27ae60" stroke-width="1.5"/>
+                    <line x1="7" y1="17" x2="12" y2="17" stroke="#3498db" stroke-width="1.5"/>
+                    <circle cx="18" cy="7" r="2" fill="#f39c12"/>
                 </svg>
                 <span>Color</span>
             </div>
@@ -342,6 +417,38 @@
     </div>
 
     <script>
+        // Theme switching
+        const THEME_KEY = 'scanario-theme';
+        const root = document.documentElement;
+        const themeBtns = document.querySelectorAll('.theme-btn');
+        
+        function setTheme(theme) {
+            if (theme === 'system') {
+                root.removeAttribute('data-theme');
+            } else {
+                root.setAttribute('data-theme', theme);
+            }
+            localStorage.setItem(THEME_KEY, theme);
+            updateThemeButtons(theme);
+        }
+        
+        function updateThemeButtons(activeTheme) {
+            themeBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === activeTheme);
+            });
+        }
+        
+        function initTheme() {
+            const saved = localStorage.getItem(THEME_KEY) || 'system';
+            setTheme(saved);
+        }
+        
+        themeBtns.forEach(btn => {
+            btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+        });
+        
+        initTheme();
+        
         const apiKeyInput = document.getElementById('apiKey');
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
@@ -415,7 +522,9 @@
             }
             
             historySection.style.display = 'block';
-            const placeholderBg = window.matchMedia('(prefers-color-scheme: dark)').matches ? '#141414' : '#f0f0f0';
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches || 
+                              document.documentElement.getAttribute('data-theme') === 'dark';
+            const placeholderBg = isDark ? '#141414' : '#f0f0f0';
             historyGrid.innerHTML = history.map(item => {
                 const imageUrl = apiKey ? `/images/${item.jobId}/${item.thumbnail}?api_key=${encodeURIComponent(apiKey)}` : '';
                 return `
