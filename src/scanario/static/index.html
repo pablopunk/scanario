@@ -7,642 +7,731 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --bg-page: #f5f5f5;
-            --bg-card: white;
-            --bg-input: white;
-            --bg-dropzone-hover: #f0f7ff;
-            --text-primary: #333;
-            --text-secondary: #555;
-            --text-muted: #666;
-            --text-hint: #999;
-            --border-default: #ddd;
-            --border-card: transparent;
-            --border-dropzone: #ccc;
-            --border-dropzone-hover: #007bff;
-            --border-tab: #ddd;
-            --border-tab-hover: #007bff;
-            --accent-primary: #007bff;
-            --accent-primary-hover: #0056b3;
-            --shadow-card: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.15);
-            --status-pending-bg: #fff3cd;
-            --status-pending-text: #856404;
-            --status-processing-bg: #cce5ff;
-            --status-processing-text: #004085;
-            --status-completed-bg: #d4edda;
-            --status-completed-text: #155724;
-            --status-error-bg: #f8d7da;
-            --status-error-text: #721c24;
-        }
-        :root[data-theme="dark"] {
-            --bg-page: #000000;
+            --bg-page: #0a0a0a;
             --bg-card: #141414;
-            --bg-input: #141414;
-            --bg-dropzone-hover: rgba(250, 255, 105, 0.05);
+            --bg-overlay: rgba(0, 0, 0, 0.85);
+            --bg-input: #1a1a1a;
             --text-primary: #ffffff;
             --text-secondary: #a0a0a0;
-            --text-muted: #a0a0a0;
-            --text-hint: #585858;
-            --border-default: rgba(65, 65, 65, 0.8);
-            --border-card: rgba(65, 65, 65, 0.8);
-            --border-dropzone: rgba(65, 65, 65, 0.8);
-            --border-dropzone-hover: #faff69;
-            --border-tab: rgba(65, 65, 65, 0.8);
-            --border-tab-hover: #faff69;
-            --accent-primary: #166534;
-            --accent-primary-hover: #14572f;
-            --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
-            --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.4);
-            --status-pending-bg: rgba(255, 243, 205, 0.1);
-            --status-pending-text: #f4f692;
-            --status-processing-bg: rgba(204, 229, 255, 0.1);
-            --status-processing-text: #faff69;
-            --status-completed-bg: rgba(212, 237, 218, 0.1);
-            --status-completed-text: #4ade80;
-            --status-error-bg: rgba(248, 215, 218, 0.1);
-            --status-error-text: #f87171;
+            --text-muted: #666666;
+            --accent-primary: #007bff;
+            --accent-primary-hover: #0056b3;
+            --accent-success: #22c55e;
+            --accent-warning: #f59e0b;
+            --border-default: #333333;
+            --border-hover: #555555;
         }
         :root[data-theme="light"] {
             --bg-page: #f5f5f5;
-            --bg-card: white;
-            --bg-input: white;
-            --bg-dropzone-hover: #f0f7ff;
-            --text-primary: #333;
-            --text-secondary: #555;
-            --text-muted: #666;
-            --text-hint: #999;
-            --border-default: #ddd;
-            --border-card: transparent;
-            --border-dropzone: #ccc;
-            --border-dropzone-hover: #007bff;
-            --border-tab: #ddd;
-            --border-tab-hover: #007bff;
-            --accent-primary: #007bff;
-            --accent-primary-hover: #0056b3;
-            --shadow-card: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.15);
-            --status-pending-bg: #fff3cd;
-            --status-pending-text: #856404;
-            --status-processing-bg: #cce5ff;
-            --status-processing-text: #004085;
-            --status-completed-bg: #d4edda;
-            --status-completed-text: #155724;
-            --status-error-bg: #f8d7da;
-            --status-error-text: #721c24;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root:not([data-theme="light"]):not([data-theme="dark"]) {
-                --bg-page: #000000;
-                --bg-card: #141414;
-                --bg-input: #141414;
-                --bg-dropzone-hover: rgba(250, 255, 105, 0.05);
-                --text-primary: #ffffff;
-                --text-secondary: #a0a0a0;
-                --text-muted: #a0a0a0;
-                --text-hint: #585858;
-                --border-default: rgba(65, 65, 65, 0.8);
-                --border-card: rgba(65, 65, 65, 0.8);
-                --border-dropzone: rgba(65, 65, 65, 0.8);
-                --border-dropzone-hover: #faff69;
-                --border-tab: rgba(65, 65, 65, 0.8);
-                --border-tab-hover: #faff69;
-                --accent-primary: #166534;
-                --accent-primary-hover: #14572f;
-                --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
-                --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.4);
-                --status-pending-bg: rgba(255, 243, 205, 0.1);
-                --status-pending-text: #f4f692;
-                --status-processing-bg: rgba(204, 229, 255, 0.1);
-                --status-processing-text: #faff69;
-                --status-completed-bg: rgba(212, 237, 218, 0.1);
-                --status-completed-text: #4ade80;
-                --status-error-bg: rgba(248, 215, 218, 0.1);
-                --status-error-text: #f87171;
-            }
+            --bg-card: #ffffff;
+            --bg-overlay: rgba(255, 255, 255, 0.95);
+            --bg-input: #f0f0f0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #555555;
+            --text-muted: #888888;
+            --border-default: #e0e0e0;
+            --border-hover: #cccccc;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
             background: var(--bg-page);
             color: var(--text-primary);
-            transition: background 0.2s, color 0.2s;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* App Layout */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-default);
+            background: var(--bg-card);
+            z-index: 100;
         }
-        .theme-switcher {
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .nav-tabs {
             display: flex;
-            background: var(--bg-input);
-            border: 1px solid var(--border-default);
-            border-radius: 4px;
-            padding: 2px;
-            gap: 2px;
+            gap: 4px;
         }
-        .theme-btn {
-            background: transparent;
+        .nav-tab {
+            padding: 8px 16px;
             border: none;
-            padding: 6px 10px;
-            font-size: 12px;
-            font-weight: 500;
+            background: transparent;
             color: var(--text-secondary);
+            font-size: 14px;
             cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.15s;
+            border-radius: 6px;
+            transition: all 0.2s;
             width: auto;
         }
-        .theme-btn:hover {
+        .nav-tab:hover {
             color: var(--text-primary);
-            background: var(--bg-dropzone-hover);
-        }
-        .theme-btn.active {
-            background: #faff69;
-            color: #151515;
-        }
-        h1 { font-size: 24px; margin-bottom: 20px; color: var(--text-primary); }
-        .section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-card);
-            transition: background 0.2s, border-color 0.2s;
-        }
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: var(--text-secondary);
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-default);
-            border-radius: 6px;
-            font-size: 14px;
             background: var(--bg-input);
+        }
+        .nav-tab.active {
             color: var(--text-primary);
-            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            background: var(--accent-primary);
         }
-        .dropzone {
-            border: 2px dashed var(--border-dropzone);
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
+        
+        /* Main Content Area */
+        .content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
         }
-        .dropzone:hover, .dropzone.dragover {
-            border-color: var(--border-dropzone-hover);
-            background: var(--bg-dropzone-hover);
+        .tab-panel {
+            display: none;
+            height: 100%;
         }
-        .dropzone p { color: var(--text-muted); margin: 8px 0; }
-        .dropzone .hint { font-size: 12px; color: var(--text-hint); }
-        input[type="file"] { display: none; }
-        .mode-tabs {
+        .tab-panel.active {
+            display: block;
+        }
+        
+        /* Scan Tab - Full Screen Dropzone */
+        .scan-container {
+            height: 100%;
             display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
             flex-direction: column;
         }
-        .mode-tab {
-            padding: 10px 12px;
-            border: 2px solid var(--border-tab);
-            border-radius: 8px;
-            background: var(--bg-input);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s;
+        .dropzone-full {
+            flex: 1;
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            border: 3px dashed var(--border-default);
+            margin: 24px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--bg-card);
         }
-        .mode-tab:hover {
-            border-color: var(--border-tab-hover);
-            background: var(--bg-dropzone-hover);
-        }
-        .mode-tab.active {
+        .dropzone-full:hover, .dropzone-full.dragover {
             border-color: var(--accent-primary);
-            background: var(--accent-primary);
-            color: white;
+            background: var(--bg-input);
         }
-        .tab-left {
+        .dropzone-full .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.6;
+        }
+        .dropzone-full h2 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .dropzone-full p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* Preview Stage */
+        .preview-stage {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            position: relative;
+        }
+        .preview-stage.active {
             display: flex;
-            flex-direction: row;
+        }
+        .preview-main {
+            flex: 1;
+            position: relative;
+            background: var(--bg-page);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-default);
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        .carousel-nav:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+        .carousel-nav.prev { left: 24px; }
+        .carousel-nav.next { right: 24px; }
+        .carousel-nav.hidden { display: none; }
+        .image-counter {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-overlay);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid var(--border-default);
+        }
+        
+        /* Mode Selector Overlay */
+        .mode-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, var(--bg-overlay) 0%, transparent 100%);
+            padding: 48px 24px 24px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        .mode-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-default);
+            border-radius: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             gap: 8px;
-            min-width: 90px;
+            min-width: 140px;
+            transition: all 0.2s;
         }
-        .tab-icon {
-            width: 24px;
-            height: 24px;
-            flex-shrink: 0;
+        .mode-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
         }
-        .tab-name {
+        .mode-card.active {
+            border-color: var(--accent-primary);
+            background: var(--bg-input);
+        }
+        .mode-card .icon {
+            width: 32px;
+            height: 32px;
+        }
+        .mode-card .name {
             font-size: 14px;
             font-weight: 600;
         }
-        .tab-desc {
-            font-size: 12px;
-            font-weight: 400;
-            opacity: 0.8;
-            flex: 1;
-            text-align: left;
-        }
-        button {
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.2s;
-        }
-        button:hover { background: var(--accent-primary-hover); }
-        button:disabled {
-            background: var(--border-default);
-            color: var(--text-hint);
-            cursor: not-allowed;
-        }
-        .status {
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 16px;
-            font-size: 14px;
-            border: 1px solid var(--border-default);
-        }
-        .status.pending { background: var(--status-pending-bg); color: var(--status-pending-text); }
-        .status.processing { background: var(--status-processing-bg); color: var(--status-processing-text); }
-        .status.completed { background: var(--status-completed-bg); color: var(--status-completed-text); }
-        .status.error { background: var(--status-error-bg); color: var(--status-error-text); }
-        .results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-        .result-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: var(--shadow-card);
-            transition: background 0.2s, border-color 0.2s;
-        }
-        .result-item img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            display: block;
-        }
-        .result-item .label {
-            padding: 10px;
-            font-size: 13px;
+        .mode-card .desc {
+            font-size: 11px;
             color: var(--text-secondary);
             text-align: center;
+            max-width: 120px;
         }
-        .result-item a {
-            display: block;
-            text-decoration: none;
-            color: inherit;
+        
+        /* Action Bar */
+        .action-bar {
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-default);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-primary-hover);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-default);
+        }
+        .btn-secondary:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+        
+        /* Processing State */
+        .processing-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: var(--bg-overlay);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 50;
+        }
+        .processing-overlay.active {
+            display: flex;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-default);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .processing-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+        
+        /* Results Stage */
+        .results-stage {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+        }
+        .results-stage.active {
+            display: flex;
+        }
+        .results-main {
+            flex: 1;
+            position: relative;
+            background: var(--bg-page);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .result-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .download-overlay {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            background: var(--bg-overlay);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-default);
+        }
+        
+        /* History Tab */
+        .history-container {
+            height: 100%;
+            overflow-y: auto;
+            padding: 24px;
         }
         .history-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
         }
         .history-item {
             background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: var(--shadow-card);
             cursor: pointer;
-            transition: transform 0.1s, background 0.2s, border-color 0.2s;
+            transition: all 0.2s;
+            border: 1px solid var(--border-default);
         }
         .history-item:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-card-hover);
+            border-color: var(--border-hover);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .history-item img {
             width: 100%;
-            height: 100px;
+            height: 160px;
             object-fit: cover;
             display: block;
         }
         .history-item .meta {
-            padding: 8px;
-            font-size: 11px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item .mode {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--bg-input);
             color: var(--text-secondary);
         }
         .history-item .time {
-            font-weight: 500;
-            color: var(--text-primary);
+            font-size: 12px;
+            color: var(--text-muted);
         }
-        .error {
-            color: var(--status-error-text);
+        .empty-state {
+            text-align: center;
+            padding: 64px 24px;
+            color: var(--text-secondary);
+        }
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        /* Settings Tab */
+        .settings-container {
+            height: 100%;
+            overflow-y: auto;
+            padding: 24px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .settings-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-default);
+        }
+        .settings-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            background: var(--bg-input);
+            color: var(--text-primary);
             font-size: 14px;
-            margin-top: 8px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+        .hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        
+        /* Setup Modal (first launch) */
+        .setup-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--bg-overlay);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .setup-modal.active {
+            display: flex;
+        }
+        .setup-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 480px;
+            width: 100%;
+            border: 1px solid var(--border-default);
+        }
+        .setup-card h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        .setup-card p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        /* Hide file input */
+        input[type="file"] { display: none; }
+        
+        /* Batch indicator */
+        .batch-indicator {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--accent-primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📄 scanario</h1>
-        <div class="theme-switcher" id="themeSwitcher">
-            <button class="theme-btn" data-theme="system" title="System">🖥️</button>
-            <button class="theme-btn" data-theme="light" title="Light">☀️</button>
-            <button class="theme-btn" data-theme="dark" title="Dark">🌙</button>
-        </div>
+    <div class="app">
+        <header class="header">
+            <h1>📄 scanario</h1>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="scan">Scan</button>
+                <button class="nav-tab" data-tab="history">History</button>
+                <button class="nav-tab" data-tab="settings">Settings</button>
+            </nav>
+        </header>
+        
+        <main class="content">
+            <!-- Scan Tab -->
+            <div class="tab-panel active" id="scanTab">
+                <div class="scan-container">
+                    <!-- Dropzone State -->
+                    <div class="dropzone-full" id="dropzone">
+                        <div class="icon">📂</div>
+                        <h2>Drop images to scan</h2>
+                        <p>Or click to browse • JPG, PNG, WebP</p>
+                        <input type="file" id="fileInput" accept="image/*" multiple>
+                    </div>
+                    
+                    <!-- Preview State -->
+                    <div class="preview-stage" id="previewStage">
+                        <div class="preview-main" id="previewMain">
+                            <div class="image-counter" id="imageCounter">1 / 1</div>
+                            <div class="batch-indicator" id="batchIndicator" style="display: none;">Batch</div>
+                            <button class="carousel-nav prev hidden" id="prevBtn">‹</button>
+                            <img class="preview-image" id="previewImage" src="" alt="Preview">
+                            <button class="carousel-nav next hidden" id="nextBtn">›</button>
+                            
+                            <!-- Processing Overlay -->
+                            <div class="processing-overlay" id="processingOverlay">
+                                <div class="spinner"></div>
+                                <div class="processing-text">Processing...</div>
+                            </div>
+                            
+                            <!-- Mode Selector Overlay -->
+                            <div class="mode-overlay" id="modeOverlay">
+                                <div class="mode-card active" data-mode="gray">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="4" width="16" height="18" rx="2" fill="currentColor" fill-opacity="0.2"/>
+                                        <line x1="7" y1="9" x2="17" y2="9" stroke="currentColor"/>
+                                        <line x1="7" y1="13" x2="17" y2="13" stroke="currentColor"/>
+                                        <line x1="7" y1="17" x2="12" y2="17" stroke="currentColor"/>
+                                    </svg>
+                                    <span class="name">Gray</span>
+                                    <span class="desc">Balanced cleanup</span>
+                                </div>
+                                <div class="mode-card" data-mode="archive">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <rect x="4" y="4" width="16" height="18" rx="2" fill="currentColor" fill-opacity="0.15"/>
+                                        <line x1="7" y1="9" x2="17" y2="9" stroke="currentColor"/>
+                                        <line x1="7" y1="14" x2="17" y2="14" stroke="currentColor"/>
+                                        <line x1="7" y1="19" x2="13" y2="19" stroke="currentColor"/>
+                                    </svg>
+                                    <span class="name">Archive</span>
+                                    <span class="desc">High contrast B&W</span>
+                                </div>
+                                <div class="mode-card" data-mode="color">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="4" width="16" height="18" rx="2" fill="#ff6b6b" fill-opacity="0.2"/>
+                                        <line x1="7" y1="9" x2="17" y2="9" stroke="#e74c3c"/>
+                                        <line x1="7" y1="13" x2="17" y2="13" stroke="#27ae60"/>
+                                        <line x1="7" y1="17" x2="12" y2="17" stroke="#3498db"/>
+                                    </svg>
+                                    <span class="name">Color</span>
+                                    <span class="desc">Preserves photos</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-bar">
+                            <button class="btn btn-secondary" id="backBtn">← Back</button>
+                            <button class="btn btn-primary" id="scanBtn">Scan Document</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Results State -->
+                    <div class="results-stage" id="resultsStage">
+                        <div class="results-main" id="resultsMain">
+                            <div class="image-counter" id="resultCounter">1 / 1</div>
+                            <button class="carousel-nav prev hidden" id="resultPrevBtn">‹</button>
+                            <img class="result-image" id="resultImage" src="" alt="Result">
+                            <button class="carousel-nav next hidden" id="resultNextBtn">›</button>
+                            
+                            <div class="download-overlay">
+                                <button class="btn btn-secondary" id="downloadPngBtn">📥 Download PNG</button>
+                                <button class="btn btn-secondary" id="downloadPdfBtn">📄 Download PDF</button>
+                                <button class="btn btn-primary hidden" id="downloadAllPdfBtn">📚 All as PDF</button>
+                            </div>
+                        </div>
+                        <div class="action-bar">
+                            <button class="btn btn-secondary" id="newScanBtn">+ New Scan</button>
+                            <button class="btn btn-secondary" id="reprocessBtn">↻ Different Mode</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div class="tab-panel" id="historyTab">
+                <div class="history-container" id="historyContainer">
+                    <div class="empty-state" id="historyEmpty">
+                        <div class="icon">📋</div>
+                        <p>No scans yet. Start by scanning a document!</p>
+                    </div>
+                    <div class="history-grid" id="historyGrid" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div class="tab-panel" id="settingsTab">
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h3>🔑 API Configuration</h3>
+                        <div class="form-group">
+                            <label>API Key</label>
+                            <input type="password" id="apiKeyInput" placeholder="sk_...">
+                            <p class="hint">Get a key: docker compose exec api python -m scanario.main auth create</p>
+                        </div>
+                        <button class="btn btn-primary" id="saveKeyBtn">Save API Key</button>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>🗑️ Data</h3>
+                        <button class="btn btn-secondary" id="clearHistoryBtn">Clear All History</button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
     
-    <div class="section">
-        <label for="apiKey">API Key</label>
-        <input type="password" id="apiKey" placeholder="sk_...">
-        <p class="hint" style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
-            Create one with: <code>docker compose exec api python -m scanario.main auth create</code>
-        </p>
-    </div>
-
-    <div class="section">
-        <div class="dropzone" id="dropzone">
-            <p><strong>Drop image here</strong> or click to select</p>
-            <p class="hint">JPG, PNG, WebP — max 10MB</p>
-            <input type="file" id="fileInput" accept="image/*">
-        </div>
-        
-        <div id="fileInfo" style="margin-top: 12px; font-size: 14px; color: var(--text-secondary); display: none;">
-            Selected: <strong id="fileName"></strong>
-        </div>
-    </div>
-
-    <div class="section">
-        <label>Enhancement Mode</label>
-        <div class="mode-tabs" id="modeTabs">
-            <div class="mode-tab active" data-mode="gray">
-                <div class="tab-left">
-                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="4" y="4" width="16" height="18" rx="2" fill="currentColor" fill-opacity="0.2"/>
-                        <line x1="7" y1="9" x2="17" y2="9" stroke="currentColor" stroke-width="1.5"/>
-                        <line x1="7" y1="13" x2="17" y2="13" stroke="currentColor" stroke-width="1.5"/>
-                        <line x1="7" y1="17" x2="12" y2="17" stroke="currentColor" stroke-width="1.5"/>
-                    </svg>
-                    <span class="tab-name">Gray</span>
-                </div>
-                <span class="tab-desc">Balanced cleanup for everyday documents</span>
+    <!-- Setup Modal (First Launch) -->
+    <div class="setup-modal" id="setupModal">
+        <div class="setup-card">
+            <h2>Welcome to scanario</h2>
+            <p>Enter your API key to get started. You can find this in your docker-compose environment or create one.</p>
+            <div class="form-group">
+                <label>API Key</label>
+                <input type="password" id="setupApiKey" placeholder="sk_...">
             </div>
-            <div class="mode-tab" data-mode="archive">
-                <div class="tab-left">
-                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <rect x="4" y="4" width="16" height="18" rx="2" fill="currentColor" fill-opacity="0.15"/>
-                        <line x1="7" y1="9" x2="17" y2="9" stroke="currentColor"/>
-                        <line x1="7" y1="14" x2="17" y2="14" stroke="currentColor"/>
-                        <line x1="7" y1="19" x2="13" y2="19" stroke="currentColor"/>
-                    </svg>
-                    <span class="tab-name">Archive</span>
-                </div>
-                <span class="tab-desc">High contrast B&W for crisp, clean document look</span>
-            </div>
-            <div class="mode-tab" data-mode="color">
-                <div class="tab-left">
-                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="4" y="4" width="16" height="18" rx="2" fill="#ff6b6b" fill-opacity="0.2"/>
-                        <line x1="7" y1="9" x2="17" y2="9" stroke="#e74c3c" stroke-width="1.5"/>
-                        <line x1="7" y1="13" x2="17" y2="13" stroke="#27ae60" stroke-width="1.5"/>
-                        <line x1="7" y1="17" x2="12" y2="17" stroke="#3498db" stroke-width="1.5"/>
-                        <circle cx="18" cy="7" r="2" fill="#f39c12"/>
-                    </svg>
-                    <span class="tab-name">Color</span>
-                </div>
-                <span class="tab-desc">Preserves original colors and photos</span>
-            </div>
+            <button class="btn btn-primary" id="setupBtn" style="width: 100%;">Get Started</button>
         </div>
-    </div>
-
-    <button id="scanBtn" disabled>Upload & Scan</button>
-
-    <div id="status" style="display: none;"></div>
-    <div id="results" class="results"></div>
-
-    <div class="section" id="historySection" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="font-size: 16px; font-weight: 600;">Previous Scans</h3>
-            <button id="clearHistoryBtn" style="width: auto; padding: 6px 12px; font-size: 12px; background: #6c757d;">Clear History</button>
-        </div>
-        <div id="historyGrid" class="history-grid"></div>
     </div>
 
     <script>
-        // Theme switching
-        const THEME_KEY = 'scanario-theme';
-        const root = document.documentElement;
-        const themeBtns = document.querySelectorAll('.theme-btn');
+        // State
+        let selectedFiles = [];
+        let currentFileIndex = 0;
+        let currentResults = [];
+        let currentJobIds = [];
+        let selectedMode = 'gray';
+        let apiKey = localStorage.getItem('scanarioApiKey') || '';
         
-        function setTheme(theme) {
-            if (theme === 'system') {
-                root.removeAttribute('data-theme');
-            } else {
-                root.setAttribute('data-theme', theme);
-            }
-            localStorage.setItem(THEME_KEY, theme);
-            updateThemeButtons(theme);
-        }
-        
-        function updateThemeButtons(activeTheme) {
-            themeBtns.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.theme === activeTheme);
-            });
-        }
-        
-        function initTheme() {
-            const saved = localStorage.getItem(THEME_KEY) || 'system';
-            setTheme(saved);
-        }
-        
-        themeBtns.forEach(btn => {
-            btn.addEventListener('click', () => setTheme(btn.dataset.theme));
-        });
-        
-        initTheme();
-        
-        const apiKeyInput = document.getElementById('apiKey');
+        // DOM Elements
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
+        const previewStage = document.getElementById('previewStage');
+        const previewImage = document.getElementById('previewImage');
+        const imageCounter = document.getElementById('imageCounter');
+        const batchIndicator = document.getElementById('batchIndicator');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const processingOverlay = document.getElementById('processingOverlay');
         const scanBtn = document.getElementById('scanBtn');
-        const modeTabs = document.getElementById('modeTabs');
-        let selectedMode = 'gray';
+        const backBtn = document.getElementById('backBtn');
+        const resultsStage = document.getElementById('resultsStage');
+        const resultImage = document.getElementById('resultImage');
+        const resultCounter = document.getElementById('resultCounter');
+        const resultPrevBtn = document.getElementById('resultPrevBtn');
+        const resultNextBtn = document.getElementById('resultNextBtn');
+        const downloadPngBtn = document.getElementById('downloadPngBtn');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const downloadAllPdfBtn = document.getElementById('downloadAllPdfBtn');
+        const newScanBtn = document.getElementById('newScanBtn');
+        const reprocessBtn = document.getElementById('reprocessBtn');
         
-        // Mode tab click handlers
-        modeTabs.querySelectorAll('.mode-tab').forEach(tab => {
+        // Check first launch
+        if (!apiKey) {
+            document.getElementById('setupModal').classList.add('active');
+        }
+        
+        // Setup
+        document.getElementById('setupBtn').addEventListener('click', () => {
+            const key = document.getElementById('setupApiKey').value.trim();
+            if (key) {
+                apiKey = key;
+                localStorage.setItem('scanarioApiKey', apiKey);
+                document.getElementById('setupModal').classList.remove('active');
+                document.getElementById('apiKeyInput').value = apiKey;
+            }
+        });
+        
+        // Tab Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                modeTabs.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 tab.classList.add('active');
-                selectedMode = tab.dataset.mode;
+                document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
             });
         });
-        const statusDiv = document.getElementById('status');
-        const resultsDiv = document.getElementById('results');
-        const historySection = document.getElementById('historySection');
-        const historyGrid = document.getElementById('historyGrid');
-        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-
-        let selectedFile = null;
-        const HISTORY_KEY = 'scanario_history';
-
-        function loadHistory() {
-            try {
-                return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-            } catch {
-                return [];
-            }
-        }
-
-        function saveHistory(history) {
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
-        }
-
-        function addToHistory(jobId, files, mode) {
-            const history = loadHistory();
-            const thumbnail = files.find(f => f.includes('enhanced')) || files[files.length - 1];
-            history.unshift({
-                jobId,
-                timestamp: Date.now(),
-                files,
-                mode,
-                thumbnail
-            });
-            saveHistory(history);
-            renderHistory();
-        }
-
-        function formatTimeAgo(timestamp) {
-            const seconds = Math.floor((Date.now() - timestamp) / 1000);
-            if (seconds < 60) return 'just now';
-            const minutes = Math.floor(seconds / 60);
-            if (minutes < 60) return `${minutes}m ago`;
-            const hours = Math.floor(minutes / 60);
-            if (hours < 24) return `${hours}h ago`;
-            const days = Math.floor(hours / 24);
-            return `${days}d ago`;
-        }
-
-        function renderHistory() {
-            const history = loadHistory();
-            const apiKey = apiKeyInput.value.trim();
-            
-            if (history.length === 0) {
-                historySection.style.display = 'none';
-                return;
-            }
-            
-            historySection.style.display = 'block';
-            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches || 
-                              document.documentElement.getAttribute('data-theme') === 'dark';
-            const placeholderBg = isDark ? '#141414' : '#f0f0f0';
-            historyGrid.innerHTML = history.map(item => {
-                const imageUrl = apiKey ? `/images/${item.jobId}/${item.thumbnail}?api_key=${encodeURIComponent(apiKey)}` : '';
-                return `
-                    <div class="history-item" data-jobid="${item.jobId}">
-                        ${imageUrl ? `<img src="${imageUrl}" alt="" loading="lazy">` : `<div style="height:100px;background:${placeholderBg};display:flex;align-items:center;justify-content:center;font-size:24px">📄</div>`}
-                        <div class="meta">
-                            <div class="time">${formatTimeAgo(item.timestamp)}</div>
-                            <div>${item.mode || 'gray'}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Add click handlers
-            historyGrid.querySelectorAll('.history-item').forEach(el => {
-                el.addEventListener('click', () => loadJobFromHistory(el.dataset.jobid));
-            });
-        }
-
-        async function loadJobFromHistory(jobId) {
-            const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) {
-                alert('Please enter your API key first');
-                apiKeyInput.focus();
-                return;
-            }
-
-            const history = loadHistory();
-            const item = history.find(h => h.jobId === jobId);
-            if (!item) return;
-
-            // Show cached results immediately
-            resultsDiv.innerHTML = '';
-            showResults(jobId, item.files, apiKey);
-            
-            statusDiv.className = 'status processing';
-            statusDiv.style.display = 'block';
-            statusDiv.textContent = '⏳ Checking job status...';
-
-            try {
-                const resp = await fetch(`/jobs/${jobId}`, {
-                    headers: { 'X-API-Key': apiKey }
-                });
-                if (!resp.ok) throw new Error('Failed to load job');
-                const data = await resp.json();
-                
-                if (data.status === 'completed') {
-                    statusDiv.className = 'status completed';
-                    statusDiv.textContent = '✅ Loaded from history';
-                    // Refresh with latest files if different
-                    if (JSON.stringify(data.files) !== JSON.stringify(item.files)) {
-                        showResults(jobId, data.files, apiKey);
-                        // Update history
-                        item.files = data.files;
-                        saveHistory(history);
-                        renderHistory();
-                    }
-                } else if (data.status === 'failed') {
-                    statusDiv.className = 'status error';
-                    statusDiv.textContent = '❌ Job failed: ' + (data.error || 'Unknown');
-                } else {
-                    statusDiv.className = 'status processing';
-                    statusDiv.textContent = `⏳ Still ${data.status}...`;
-                    // Continue polling
-                    pollJob(jobId, apiKey);
-                }
-            } catch (err) {
-                statusDiv.className = 'status error';
-                statusDiv.textContent = '❌ ' + err.message;
-            }
-        }
-
-        clearHistoryBtn.addEventListener('click', () => {
-            if (confirm('Clear all scan history from this browser?')) {
-                localStorage.removeItem(HISTORY_KEY);
+        
+        // Settings
+        document.getElementById('apiKeyInput').value = apiKey;
+        document.getElementById('saveKeyBtn').addEventListener('click', () => {
+            apiKey = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('scanarioApiKey', apiKey);
+            alert('API key saved!');
+        });
+        
+        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+            if (confirm('Clear all scan history?')) {
+                localStorage.removeItem('scanario_history');
                 renderHistory();
-                resultsDiv.innerHTML = '';
             }
         });
-
-        // Load saved API key first, then render history
-        apiKeyInput.value = localStorage.getItem('scanarioApiKey') || '';
-        apiKeyInput.addEventListener('change', () => {
-            localStorage.setItem('scanarioApiKey', apiKeyInput.value);
-        });
         
-        // Re-render history when API key changes (so images load)
-        apiKeyInput.addEventListener('input', renderHistory);
-        
-        // Load history on page load (now with API key available)
-        renderHistory();
-
-        // Dropzone handling
+        // Dropzone
         dropzone.addEventListener('click', () => fileInput.click());
         
         dropzone.addEventListener('dragover', (e) => {
@@ -657,147 +746,379 @@
         dropzone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropzone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length) handleFile(files[0]);
+            handleFiles(e.dataTransfer.files);
         });
-
+        
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) handleFile(e.target.files[0]);
+            handleFiles(e.target.files);
         });
-
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
+        
+        function handleFiles(files) {
+            selectedFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            if (selectedFiles.length === 0) {
+                alert('Please select image files');
                 return;
             }
-            selectedFile = file;
-            fileName.textContent = file.name;
-            fileInfo.style.display = 'block';
-            scanBtn.disabled = !apiKeyInput.value;
+            currentFileIndex = 0;
+            showPreview();
         }
-
-        apiKeyInput.addEventListener('input', () => {
-            scanBtn.disabled = !apiKeyInput.value || !selectedFile;
+        
+        function showPreview() {
+            dropzone.style.display = 'none';
+            previewStage.classList.add('active');
+            resultsStage.classList.remove('active');
+            processingOverlay.classList.remove('active');
+            
+            updatePreviewImage();
+            updateCarouselButtons();
+            
+            if (selectedFiles.length > 1) {
+                batchIndicator.style.display = 'block';
+            } else {
+                batchIndicator.style.display = 'none';
+            }
+        }
+        
+        function updatePreviewImage() {
+            const file = selectedFiles[currentFileIndex];
+            const url = URL.createObjectURL(file);
+            previewImage.src = url;
+            imageCounter.textContent = `${currentFileIndex + 1} / ${selectedFiles.length}`;
+        }
+        
+        function updateCarouselButtons() {
+            prevBtn.classList.toggle('hidden', selectedFiles.length <= 1);
+            nextBtn.classList.toggle('hidden', selectedFiles.length <= 1);
+            if (selectedFiles.length > 1) {
+                prevBtn.disabled = currentFileIndex === 0;
+                nextBtn.disabled = currentFileIndex === selectedFiles.length - 1;
+            }
+        }
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentFileIndex > 0) {
+                currentFileIndex--;
+                updatePreviewImage();
+                updateCarouselButtons();
+            }
         });
-
-        async function pollJob(jobId, apiKey) {
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentFileIndex < selectedFiles.length - 1) {
+                currentFileIndex++;
+                updatePreviewImage();
+                updateCarouselButtons();
+            }
+        });
+        
+        // Mode Selection
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                selectedMode = card.dataset.mode;
+            });
+        });
+        
+        // Scan
+        scanBtn.addEventListener('click', async () => {
+            if (!apiKey) {
+                alert('Please set your API key in Settings first');
+                switchTab('settings');
+                return;
+            }
+            
+            processingOverlay.classList.add('active');
+            
+            try {
+                currentResults = [];
+                currentJobIds = [];
+                
+                for (const file of selectedFiles) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('mode', selectedMode);
+                    formData.append('backend', 'auto');
+                    
+                    const resp = await fetch('/scan', {
+                        method: 'POST',
+                        headers: { 'X-API-Key': apiKey },
+                        body: formData
+                    });
+                    
+                    if (!resp.ok) throw new Error('Failed to start scan');
+                    const data = await resp.json();
+                    currentJobIds.push(data.job_id);
+                }
+                
+                // Poll for completion
+                await pollAllJobs();
+                
+            } catch (err) {
+                alert('Error: ' + err.message);
+                processingOverlay.classList.remove('active');
+            }
+        });
+        
+        async function pollAllJobs() {
             const maxAttempts = 60;
             for (let i = 0; i < maxAttempts; i++) {
+                const allComplete = await checkJobsStatus();
+                if (allComplete) {
+                    showResults();
+                    return;
+                }
+                await new Promise(r => setTimeout(r, 2000));
+            }
+            alert('Processing timed out');
+            processingOverlay.classList.remove('active');
+        }
+        
+        async function checkJobsStatus() {
+            const results = [];
+            for (const jobId of currentJobIds) {
                 const resp = await fetch(`/jobs/${jobId}`, {
                     headers: { 'X-API-Key': apiKey }
                 });
-                if (!resp.ok) throw new Error('Failed to check status');
                 const data = await resp.json();
-                
-                statusDiv.className = 'status ' + data.status;
-                statusDiv.style.display = 'block';
                 
                 if (data.status === 'completed') {
-                    statusDiv.textContent = '✅ Scan complete!';
-                    showResults(jobId, data.files, apiKey);
-                    addToHistory(jobId, data.files, selectedMode);
-                    scanBtn.disabled = false;
-                    scanBtn.textContent = 'Upload & Scan';
-                    return;
+                    const enhancedFile = data.files.find(f => f.includes('enhanced')) || data.files[data.files.length - 1];
+                    results.push({ jobId, file: enhancedFile });
                 } else if (data.status === 'failed') {
-                    statusDiv.textContent = '❌ Failed: ' + (data.error || 'Unknown error');
-                    scanBtn.disabled = false;
-                    scanBtn.textContent = 'Upload & Scan';
-                    return;
+                    throw new Error('Job failed');
                 } else {
-                    statusDiv.textContent = `⏳ ${data.status}... (${i + 1}s)`;
+                    return false; // Still processing
                 }
-                
-                await new Promise(r => setTimeout(r, 2000));
             }
-            statusDiv.textContent = '⏱️ Timeout - check /jobs manually';
-            scanBtn.disabled = false;
-            scanBtn.textContent = 'Upload & Scan';
+            currentResults = results;
+            return true;
         }
-
-        function showResults(jobId, files, apiKey) {
-            resultsDiv.innerHTML = '';
-            const fileOrder = ['01-corners', '02-warped', '03-enhanced'];
-            const labels = {
-                '01-corners': 'Detected Corners',
-                '02-warped': 'Warped',
-                '03-enhanced': 'Enhanced'
+        
+        function showResults() {
+            processingOverlay.classList.remove('active');
+            previewStage.classList.remove('active');
+            resultsStage.classList.add('active');
+            
+            currentFileIndex = 0;
+            updateResultImage();
+            updateResultCarousel();
+            
+            // Show batch PDF button if multiple
+            downloadAllPdfBtn.classList.toggle('hidden', currentResults.length <= 1);
+            
+            // Add to history
+            addToHistory(currentJobIds, currentResults.map(r => r.file), selectedMode);
+        }
+        
+        function updateResultImage() {
+            const result = currentResults[currentFileIndex];
+            resultImage.src = `/images/${result.jobId}/${result.file}?api_key=${encodeURIComponent(apiKey)}`;
+            resultCounter.textContent = `${currentFileIndex + 1} / ${currentResults.length}`;
+            
+            downloadPngBtn.onclick = () => {
+                window.open(`/images/${result.jobId}/${result.file}?api_key=${encodeURIComponent(apiKey)}`, '_blank');
             };
             
-            // Sort files by prefix
-            const sortedFiles = [...files].sort((a, b) => {
-                const aIdx = fileOrder.findIndex(p => a.startsWith(p));
-                const bIdx = fileOrder.findIndex(p => b.startsWith(p));
-                return aIdx - bIdx;
-            });
-
-            sortedFiles.forEach(filename => {
-                const prefix = fileOrder.find(p => filename.startsWith(p)) || filename;
-                const imageUrl = `/images/${jobId}/${filename}?api_key=${encodeURIComponent(apiKey)}`;
-                const item = document.createElement('div');
-                item.className = 'result-item';
-                item.innerHTML = `
-                    <a href="${imageUrl}" target="_blank">
-                        <img src="${imageUrl}" alt="${filename}" 
-                             style="filter: blur(0);" loading="lazy">
-                        <div class="label">${labels[prefix] || filename}</div>
-                    </a>
-                `;
-                resultsDiv.appendChild(item);
-            });
-            
-            // Scroll to results on mobile
-            if (window.innerWidth < 600) {
-                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            downloadPdfBtn.onclick = () => {
+                downloadSinglePdf(result.jobId);
+            };
+        }
+        
+        function updateResultCarousel() {
+            resultPrevBtn.classList.toggle('hidden', currentResults.length <= 1);
+            resultNextBtn.classList.toggle('hidden', currentResults.length <= 1);
+            if (currentResults.length > 1) {
+                resultPrevBtn.disabled = currentFileIndex === 0;
+                resultNextBtn.disabled = currentFileIndex === currentResults.length - 1;
             }
         }
-
-        scanBtn.addEventListener('click', async () => {
-            const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) {
-                alert('Please enter an API key');
-                return;
-            }
-            if (!selectedFile) {
-                alert('Please select an image');
-                return;
-            }
-
-            scanBtn.disabled = true;
-            scanBtn.textContent = 'Uploading...';
-            resultsDiv.innerHTML = '';
-            statusDiv.style.display = 'none';
-
-            try {
-                const formData = new FormData();
-                formData.append('file', selectedFile);
-                formData.append('mode', selectedMode);
-                formData.append('backend', 'auto');
-                formData.append('debug', 'false');
-
-                const resp = await fetch('/scan', {
-                    method: 'POST',
-                    headers: { 'X-API-Key': apiKey },
-                    body: formData
-                });
-
-                if (!resp.ok) {
-                    const err = await resp.json();
-                    throw new Error(err.detail?.message || `HTTP ${resp.status}`);
-                }
-
-                const data = await resp.json();
-                scanBtn.textContent = 'Processing...';
-                await pollJob(data.job_id, apiKey);
-
-            } catch (err) {
-                statusDiv.className = 'status error';
-                statusDiv.style.display = 'block';
-                statusDiv.textContent = '❌ ' + err.message;
-                scanBtn.disabled = false;
-                scanBtn.textContent = 'Upload & Scan';
+        
+        resultPrevBtn.addEventListener('click', () => {
+            if (currentFileIndex > 0) {
+                currentFileIndex--;
+                updateResultImage();
+                updateResultCarousel();
             }
         });
+        
+        resultNextBtn.addEventListener('click', () => {
+            if (currentFileIndex < currentResults.length - 1) {
+                currentFileIndex++;
+                updateResultImage();
+                updateResultCarousel();
+            }
+        });
+        
+        downloadAllPdfBtn.addEventListener('click', async () => {
+            try {
+                const pageSpecs = currentResults.map(r => ({ type: 'job_id', value: r.jobId }));
+                const resp = await fetch('/pdf', {
+                    method: 'POST',
+                    headers: { 
+                        'X-API-Key': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pages: pageSpecs,
+                        mode: selectedMode,
+                        backend: 'auto'
+                    })
+                });
+                
+                if (!resp.ok) throw new Error('Failed to create PDF');
+                const data = await resp.json();
+                alert('PDF creation started. Check History tab for download.');
+            } catch (err) {
+                alert('Error creating PDF: ' + err.message);
+            }
+        });
+        
+        async function downloadSinglePdf(jobId) {
+            try {
+                const resp = await fetch('/pdf', {
+                    method: 'POST',
+                    headers: { 
+                        'X-API-Key': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pages: [{ type: 'job_id', value: jobId }],
+                        mode: selectedMode,
+                        backend: 'auto'
+                    })
+                });
+                
+                if (!resp.ok) throw new Error('Failed to create PDF');
+                const data = await resp.json();
+                alert('PDF creation started. Check History tab for download.');
+            } catch (err) {
+                alert('Error creating PDF: ' + err.message);
+            }
+        }
+        
+        // Navigation
+        backBtn.addEventListener('click', () => {
+            previewStage.classList.remove('active');
+            dropzone.style.display = 'flex';
+            selectedFiles = [];
+        });
+        
+        newScanBtn.addEventListener('click', () => {
+            resultsStage.classList.remove('active');
+            dropzone.style.display = 'flex';
+            selectedFiles = [];
+            currentResults = [];
+        });
+        
+        reprocessBtn.addEventListener('click', () => {
+            resultsStage.classList.remove('active');
+            previewStage.classList.add('active');
+        });
+        
+        // History
+        const HISTORY_KEY = 'scanario_history';
+        
+        function addToHistory(jobIds, files, mode) {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const timestamp = Date.now();
+            
+            // Group batch jobs as one history entry
+            history.unshift({
+                jobIds: Array.isArray(jobIds) ? jobIds : [jobIds],
+                files: files,
+                mode: mode,
+                timestamp: timestamp,
+                count: files.length
+            });
+            
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
+            renderHistory();
+        }
+        
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const empty = document.getElementById('historyEmpty');
+            const grid = document.getElementById('historyGrid');
+            
+            if (history.length === 0) {
+                empty.style.display = 'block';
+                grid.style.display = 'none';
+                return;
+            }
+            
+            empty.style.display = 'none';
+            grid.style.display = 'grid';
+            
+            grid.innerHTML = history.map((item, index) => {
+                const firstJobId = item.jobIds[0];
+                const firstFile = item.files[0];
+                const imageUrl = apiKey ? `/images/${firstJobId}/${firstFile}?api_key=${encodeURIComponent(apiKey)}` : '';
+                const timeAgo = formatTimeAgo(item.timestamp);
+                const badge = item.count > 1 ? `<span style="position: absolute; top: 8px; right: 8px; background: var(--accent-primary); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${item.count}</span>` : '';
+                
+                return `
+                    <div class="history-item" data-index="${index}">
+                        <div style="position: relative;">
+                            ${imageUrl ? `<img src="${imageUrl}" alt="" loading="lazy">` : `<div style="height: 160px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 48px;">📄</div>`}
+                            ${badge}
+                        </div>
+                        <div class="meta">
+                            <span class="mode">${item.mode}</span>
+                            <span class="time">${timeAgo}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            grid.querySelectorAll('.history-item').forEach(el => {
+                el.addEventListener('click', () => loadHistoryItem(el.dataset.index));
+            });
+        }
+        
+        function formatTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return 'just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            return `${Math.floor(hours / 24)}d ago`;
+        }
+        
+        function loadHistoryItem(index) {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const item = history[index];
+            if (!item) return;
+            
+            // Load into results
+            currentResults = item.jobIds.map((jobId, i) => ({
+                jobId,
+                file: item.files[i] || item.files[0]
+            }));
+            currentFileIndex = 0;
+            selectedMode = item.mode;
+            
+            dropzone.style.display = 'none';
+            previewStage.classList.remove('active');
+            resultsStage.classList.add('active');
+            updateResultImage();
+            updateResultCarousel();
+            downloadAllPdfBtn.classList.toggle('hidden', currentResults.length <= 1);
+            
+            // Switch to scan tab to show results
+            switchTab('scan');
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+        
+        // Initial render
+        renderHistory();
     </script>
 </body>
 </html>
