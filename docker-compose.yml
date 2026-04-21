@@ -22,6 +22,7 @@ services:
       - SCANARIO_MAX_AGE_DAYS=7
       - SCANARIO_CLEANUP_INTERVAL_HOURS=24
       - PYTHONPATH=/app/src
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - scanario_data:/app/data
     depends_on:
