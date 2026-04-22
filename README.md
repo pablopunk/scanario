@@ -10,10 +10,10 @@ Self-hosted document scanner that handles real-world mess — cluttered backgrou
 
 ## Features
 
-- **AI segmentation + classical geometry** — Isolates documents on cluttered backgrounds, fits precise quads with true aspect ratio recovery
-- **Faithful enhancement** — Gray/Color modes using denoise, unsharp mask, and white clamp; no generative AI = no hallucinated text
-- **Smart compression** — JPEG quality 85 delivers ~50% smaller files with no visual quality loss
-- **Full web UI + REST API + CLI** — Drag-drop batch processing, async job queue, auto-cleanup after 7 days, Docker deployment
+- **Drop images, get a PDF** — Drag multiple photos into the browser and download a clean, scan-quality PDF
+- **Works with messy photos** — Handles cluttered backgrounds, shadows, crumpled paper, even overlapping receipts
+- **Your documents stay private** — Self-hosted, runs entirely on your machine, nothing sent to the cloud
+- **Three ways to use it** — Web UI for quick scans, API for automation, CLI for scripting
 
 ## Quick Start
 
