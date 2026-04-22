@@ -18,11 +18,29 @@ Self-hosted document scanner that handles real-world mess — cluttered backgrou
 ## Quick Start
 
 ```bash
-# 1. Create an API key
+# Create an API key
 docker compose exec api python -m scanario.main auth create
+```
 
-# 2. Drop images in the browser at http://localhost:8000
-#    Or use the CLI
+### Web
+
+Open `http://localhost:8000` → drag images → download PDF.
+
+### API
+
+```bash
+curl -X POST http://localhost:8000/scan \
+  -H "X-API-Key: $KEY" \
+  -F "file=@doc.jpg" \
+  -F "mode=gray"
+
+# Returns: {"job_id": "...", "status": "pending"}
+# Poll /jobs/{job_id} until completed, then download from /images/{job_id}/{filename}
+```
+
+### CLI
+
+```bash
 python -m scanario.main scan photo.jpg
 python -m scanario.main pdf page1.jpg page2.jpg -o output.pdf
 ```
@@ -94,4 +112,4 @@ Set `GEMINI_API_KEY` in a `.env` file next to this `docker-compose.yml`, then:
 docker compose up -d
 ```
 
-Web UI and API are both at `http://localhost:8000`.
+
