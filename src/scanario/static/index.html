@@ -467,6 +467,51 @@
         }
         .hidden { display: none !important; }
         
+        /* Theme Toggle - ClickHouse Style */
+        .theme-toggle {
+            display: flex;
+            gap: 0;
+            background: var(--bg-input);
+            border: 1px solid var(--border-default);
+            border-radius: 4px;
+            padding: 4px;
+        }
+        .theme-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            flex: 1;
+            justify-content: center;
+        }
+        .theme-option:hover {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+        .theme-option.active {
+            background: #faff69;
+            color: #151515;
+            font-weight: 600;
+        }
+        .theme-option.active:hover {
+            background: #faff69;
+            color: #151515;
+        }
+        .theme-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        
         /* Setup Modal (first launch) */
         .setup-modal {
             display: none;
@@ -564,17 +609,7 @@
                                         <line x1="7" y1="17" x2="12" y2="17" stroke="currentColor"/>
                                     </svg>
                                     <span class="name">Gray</span>
-                                    <span class="desc">Balanced cleanup</span>
-                                </div>
-                                <div class="mode-card" data-mode="archive">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                        <rect x="4" y="4" width="16" height="18" rx="2" fill="currentColor" fill-opacity="0.15"/>
-                                        <line x1="7" y1="9" x2="17" y2="9" stroke="currentColor"/>
-                                        <line x1="7" y1="14" x2="17" y2="14" stroke="currentColor"/>
-                                        <line x1="7" y1="19" x2="13" y2="19" stroke="currentColor"/>
-                                    </svg>
-                                    <span class="name">Archive</span>
-                                    <span class="desc">High contrast B&W</span>
+                                    <span class="desc">Clean B&W scan</span>
                                 </div>
                                 <div class="mode-card" data-mode="color">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -631,7 +666,7 @@
             <div class="tab-panel" id="settingsTab">
                 <div class="settings-container">
                     <div class="settings-section">
-                        <h3>🔑 API Configuration</h3>
+                        <h3>API Configuration</h3>
                         <div class="form-group">
                             <label>API Key</label>
                             <input type="password" id="apiKeyInput" placeholder="sk_...">
@@ -641,28 +676,44 @@
                     </div>
                     
                     <div class="settings-section">
-                        <h3>🌓 Appearance</h3>
+                        <h3>Appearance</h3>
                         <div class="form-group">
-                            <label>Theme</label>
-                            <div class="mode-cards" style="grid-template-columns: repeat(3, 1fr);">
-                                <div class="mode-card" data-theme="system" id="themeSystem">
-                                    <div class="mode-icon">🖥️</div>
-                                    <div class="mode-name">System</div>
-                                </div>
-                                <div class="mode-card" data-theme="light" id="themeLight">
-                                    <div class="mode-icon">☀️</div>
-                                    <div class="mode-name">Light</div>
-                                </div>
-                                <div class="mode-card" data-theme="dark" id="themeDark">
-                                    <div class="mode-icon">🌙</div>
-                                    <div class="mode-name">Dark</div>
-                                </div>
+                            <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.4px; font-weight: 600;">Theme</label>
+                            <div class="theme-toggle">
+                                <button class="theme-option" data-theme="system" id="themeSystem">
+                                    <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                        <line x1="8" y1="21" x2="16" y2="21"/>
+                                        <line x1="12" y1="17" x2="12" y2="21"/>
+                                    </svg>
+                                    <span>System</span>
+                                </button>
+                                <button class="theme-option" data-theme="light" id="themeLight">
+                                    <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="5"/>
+                                        <line x1="12" y1="1" x2="12" y2="3"/>
+                                        <line x1="12" y1="21" x2="12" y2="23"/>
+                                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                        <line x1="1" y1="12" x2="3" y2="12"/>
+                                        <line x1="21" y1="12" x2="23" y2="12"/>
+                                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                                    </svg>
+                                    <span>Light</span>
+                                </button>
+                                <button class="theme-option" data-theme="dark" id="themeDark">
+                                    <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                    </svg>
+                                    <span>Dark</span>
+                                </button>
                             </div>
                         </div>
                     </div>
                     
                     <div class="settings-section">
-                        <h3>🗑️ Data</h3>
+                        <h3>Data</h3>
                         <button class="btn btn-secondary" id="clearHistoryBtn">Clear All History</button>
                     </div>
                 </div>
@@ -755,15 +806,15 @@
             } else {
                 root.setAttribute('data-theme', theme);
             }
-            // Update selection UI (only in settings)
-            document.querySelectorAll('#settingsTab [data-theme]').forEach(el => {
-                el.classList.toggle('selected', el.dataset.theme === theme);
+            // Update active state on theme toggle buttons
+            document.querySelectorAll('.theme-option').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
             });
         }
         
-        document.querySelectorAll('#settingsTab [data-theme]').forEach(card => {
-            card.addEventListener('click', () => {
-                localStorage.setItem('scanarioTheme', card.dataset.theme);
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                localStorage.setItem('scanarioTheme', btn.dataset.theme);
                 loadTheme();
             });
         });

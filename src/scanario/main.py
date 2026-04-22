@@ -929,7 +929,6 @@ def enhance_scan(img: np.ndarray, mode: str = "gray") -> np.ndarray:
 
     Modes:
       'gray'    – faithful grayscale scan, bleed-through suppressed (default)
-      'archive' – slightly crisper grayscale, still bleed-through safe
       'color'   – color preserved, shadows removed
     """
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB).astype(np.float32)
@@ -943,10 +942,7 @@ def enhance_scan(img: np.ndarray, mode: str = "gray") -> np.ndarray:
     L_denoised = cv2.fastNlMeansDenoising(L8, None, h=4, templateWindowSize=7, searchWindowSize=21)
 
     # 3. Clamp near-white to white so the next-page bleed-through disappears.
-    if mode == "archive":
-        L_clean = _white_clamp(L_denoised, low=195, high=235).astype(np.uint8)
-    else:
-        L_clean = _white_clamp(L_denoised, low=205, high=240).astype(np.uint8)
+    L_clean = _white_clamp(L_denoised, low=205, high=240).astype(np.uint8)
 
     def unsharp(x, sigma=1.0, amount=0.4):
         blur = cv2.GaussianBlur(x.astype(np.float32), (0, 0), sigma)
@@ -955,10 +951,6 @@ def enhance_scan(img: np.ndarray, mode: str = "gray") -> np.ndarray:
 
     if mode == "gray":
         out = unsharp(L_clean, sigma=1.0, amount=0.3)
-        return cv2.cvtColor(out, cv2.COLOR_GRAY2BGR)
-
-    if mode == "archive":
-        out = unsharp(L_clean, sigma=1.0, amount=0.6)
         return cv2.cvtColor(out, cv2.COLOR_GRAY2BGR)
 
     if mode == "color":
@@ -1160,7 +1152,7 @@ def main():
     scan_parser = subparsers.add_parser("scan", help="Scan a single document")
     scan_parser.add_argument("input", help="Input image path")
     scan_parser.add_argument("--out-dir", required=True, help="Output directory; saves numbered step files like 01-corners-bad-perspective.jpg")
-    scan_parser.add_argument("--mode", choices=["gray", "archive", "color"], default="gray", help="Enhancement mode")
+    scan_parser.add_argument("--mode", choices=["gray", "color"], default="gray", help="Enhancement mode")
     scan_parser.add_argument("--backend", choices=["auto", "nano", "rembg"], default="auto", help="Isolation backend")
     scan_parser.add_argument("--debug", action="store_true", help="Save intermediate debug images")
 
@@ -1168,7 +1160,7 @@ def main():
     pdf_parser = subparsers.add_parser("pdf", help="Create PDF from multiple images")
     pdf_parser.add_argument("output", help="Output PDF path")
     pdf_parser.add_argument("sources", nargs="+", help="Input images or result directories to include as pages")
-    pdf_parser.add_argument("--mode", choices=["gray", "archive", "color"], default="gray", help="Enhancement mode for new images")
+    pdf_parser.add_argument("--mode", choices=["gray", "color"], default="gray", help="Enhancement mode for new images")
     pdf_parser.add_argument("--backend", choices=["auto", "nano", "rembg"], default="auto", help="Isolation backend for new images")
     pdf_parser.add_argument("--debug", action="store_true", help="Save intermediate debug images")
     pdf_parser.add_argument("--dpi", type=int, default=300, help="PDF resolution in DPI")
