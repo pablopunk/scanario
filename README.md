@@ -4,6 +4,10 @@
   <img src="https://github.com/pablopunk/scanario/blob/main/src/assets/scanario.jpeg?raw=true" width="200px" />
 </p>
 
+<p align="center">
+  <img src="https://github.com/pablopunk/scanario/blob/main/src/assets/scanario.gif?raw=true" width="90%" />
+</p>
+
 > Self-hosted doc scanner. Take pictures with your phone, drop them into scanario, and get a clean PDF.
 
 ## Features
