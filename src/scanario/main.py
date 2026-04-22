@@ -1013,17 +1013,17 @@ def cmd_scan(args):
         print(f"   {name}: ({pt[0]:.0f}, {pt[1]:.0f})")
 
     overlay_path = build_step_path(out_dir, 1, "corners", image_slug)
-    cv2.imwrite(str(overlay_path), draw_corners(img, corners))
+    cv2.imwrite(str(overlay_path), draw_corners(img, corners), [cv2.IMWRITE_JPEG_QUALITY, 85])
     print(f"📄 Overlay → {overlay_path}")
 
     warped = warp_document(img, corners)
     warp_path = build_step_path(out_dir, 2, "warped", image_slug)
-    cv2.imwrite(str(warp_path), warped)
+    cv2.imwrite(str(warp_path), warped, [cv2.IMWRITE_JPEG_QUALITY, 85])
     print(f"📄 Warped  → {warp_path}")
 
     enhanced = enhance_scan(warped, mode=args.mode)
     enhance_path = build_step_path(out_dir, 3, f"enhanced-{args.mode}", image_slug)
-    cv2.imwrite(str(enhance_path), enhanced)
+    cv2.imwrite(str(enhance_path), enhanced, [cv2.IMWRITE_JPEG_QUALITY, 85])
     print(f"✨ Enhanced → {enhance_path} (mode={args.mode})")
 
 
@@ -1082,7 +1082,7 @@ def cmd_pdf(args):
         warped = warp_document(img, corners)
         enhanced = enhance_scan(warped, mode=args.mode)
         temp_path = output_path.parent / f"_page_{i:03d}.jpg"
-        cv2.imwrite(str(temp_path), enhanced)
+        cv2.imwrite(str(temp_path), enhanced, [cv2.IMWRITE_JPEG_QUALITY, 85])
         pages_in_order.append(temp_path)
         temp_pages.append(temp_path)
 

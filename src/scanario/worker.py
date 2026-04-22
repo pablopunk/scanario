@@ -52,12 +52,13 @@ def run_scanario(input_path: Path, output_dir: Path, mode: str, backend: str, de
     warped = scanario.warp_document(img, corners)
     enhanced = scanario.enhance_scan(warped, mode=mode)
     
-    # Save with step prefixes
+    # Save with step prefixes (JPEG quality 85 for compression)
     slug = input_path.stem
+    jpeg_quality = [cv2.IMWRITE_JPEG_QUALITY, 85]
     cv2.imwrite(str(output_dir / f"01-corners-{slug}.jpg"), 
-                scanario.draw_corners(img, corners))
-    cv2.imwrite(str(output_dir / f"02-warped-{slug}.jpg"), warped)
-    cv2.imwrite(str(output_dir / f"03-enhanced-{mode}-{slug}.jpg"), enhanced)
+                scanario.draw_corners(img, corners), jpeg_quality)
+    cv2.imwrite(str(output_dir / f"02-warped-{slug}.jpg"), warped, jpeg_quality)
+    cv2.imwrite(str(output_dir / f"03-enhanced-{mode}-{slug}.jpg"), enhanced, jpeg_quality)
     
     result = {
         "corners": corners.tolist(),
@@ -138,7 +139,7 @@ def create_pdf(self, job_id: str, page_specs: list, mode: str, backend: str, deb
                 enhanced = scanario.enhance_scan(warped, mode=mode)
                 
                 page_path = output_dir / f"page_{i:03d}.jpg"
-                cv2.imwrite(str(page_path), enhanced)
+                cv2.imwrite(str(page_path), enhanced, [cv2.IMWRITE_JPEG_QUALITY, 85])
                 page_images.append(page_path)
                 
             elif spec['type'] == 'job_id':
