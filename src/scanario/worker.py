@@ -8,9 +8,6 @@ from celery.signals import worker_ready
 from scanario.config import get_settings, validate_gemini_api_key
 from scanario.storage import get_results_dir, get_upload_path
 
-# Validate GEMINI_API_KEY on startup
-validate_gemini_api_key()
-
 settings = get_settings()
 
 celery_app = Celery(
@@ -33,6 +30,7 @@ celery_app.conf.update(
 
 def run_scanario(input_path: Path, output_dir: Path, mode: str, backend: str, debug: bool = False):
     """Import and run scanario processing."""
+    validate_gemini_api_key()
     # Import here to avoid loading heavy deps on worker startup
     from scanario import main as scanario
     import cv2
