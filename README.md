@@ -95,18 +95,3 @@ docker compose up -d
 ```
 
 API is at `http://localhost:8000`.
-
-### Create an API key
-
-All endpoints (except `/health`) require an API key. Create one from inside the `api` container:
-
-```sh
-docker compose exec api python -m scanario.main auth create
-```
-
-Send it on every request as either:
-
-```
-X-API-Key: <your-key>
-Authorization: Bearer <your-key>
-```
