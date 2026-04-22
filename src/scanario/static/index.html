@@ -519,7 +519,7 @@
 <body>
     <div class="app">
         <header class="header">
-            <h1>📄 scanario</h1>
+            <h1 id="logoHome" style="cursor: pointer;">📄 scanario</h1>
             <nav class="nav-tabs">
                 <button class="nav-tab active" data-tab="scan">Scan</button>
                 <button class="nav-tab" data-tab="history">History</button>
@@ -610,7 +610,6 @@
                             </div>
                         </div>
                         <div class="action-bar">
-                            <button class="btn btn-secondary" id="newScanBtn">+ New Scan</button>
                             <button class="btn btn-secondary" id="reprocessBtn">↻ Different Mode</button>
                         </div>
                     </div>
@@ -692,7 +691,6 @@
         const downloadPngBtn = document.getElementById('downloadPngBtn');
         const downloadPdfBtn = document.getElementById('downloadPdfBtn');
         const downloadAllPdfBtn = document.getElementById('downloadAllPdfBtn');
-        const newScanBtn = document.getElementById('newScanBtn');
         const reprocessBtn = document.getElementById('reprocessBtn');
         
         // Check first launch
@@ -1046,12 +1044,17 @@
             selectedFiles = [];
         });
         
-        newScanBtn.addEventListener('click', () => {
+        function resetToDropzone() {
             resultsStage.classList.remove('active');
+            previewStage.classList.remove('active');
+            processingOverlay.classList.remove('active');
             dropzone.style.display = 'flex';
             selectedFiles = [];
             currentResults = [];
-        });
+            currentFileIndex = 0;
+            switchTab('scan');
+        }
+        document.getElementById('logoHome').addEventListener('click', resetToDropzone);
         
         reprocessBtn.addEventListener('click', () => {
             resultsStage.classList.remove('active');
