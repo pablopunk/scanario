@@ -955,50 +955,87 @@
             }
         });
         
-        downloadAllPdfBtn.addEventListener('click', async () => {
-            try {
-                const pageSpecs = currentResults.map(r => ({ type: 'job_id', value: r.jobId }));
-                const resp = await fetch('/pdf', {
-                    method: 'POST',
-                    headers: { 
-                        'X-API-Key': apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        pages: pageSpecs,
-                        mode: selectedMode,
-                        backend: 'auto'
-                    })
+        async function createPdf(jobIds) {
+            const formData = new FormData();
+            formData.append('mode', selectedMode);
+            formData.append('backend', 'auto');
+            for (const jid of jobIds) {
+                formData.append('existing_job_ids', jid);
+                formData.append('page_order', 'job:' + jid);
+            }
+            
+            const resp = await fetch('/pdf', {
+                method: 'POST',
+                headers: { 'X-API-Key': apiKey },
+                body: formData
+            });
+            
+            if (!resp.ok) {
+                const err = await resp.text();
+                throw new Error(err || 'Failed to create PDF');
+            }
+            const data = await resp.json();
+            return data.job_id;
+        }
+        
+        async function waitForPdfAndDownload(pdfJobId) {
+            // Poll until PDF is ready
+            for (let i = 0; i < 60; i++) {
+                const resp = await fetch(`/jobs/${pdfJobId}`, {
+                    headers: { 'X-API-Key': apiKey }
                 });
-                
-                if (!resp.ok) throw new Error('Failed to create PDF');
                 const data = await resp.json();
-                alert('PDF creation started. Check History tab for download.');
+                
+                if (data.status === 'completed') {
+                    // Find the PDF file
+                    const pdfFile = data.files.find(f => f.endsWith('.pdf'));
+                    if (pdfFile) {
+                        const url = `/images/${pdfJobId}/${pdfFile}?api_key=${encodeURIComponent(apiKey)}`;
+                        // Trigger download
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = pdfFile;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        return;
+                    }
+                    throw new Error('PDF file not found in result');
+                } else if (data.status === 'failed') {
+                    throw new Error(data.error || 'PDF creation failed');
+                }
+                await new Promise(r => setTimeout(r, 1500));
+            }
+            throw new Error('PDF creation timed out');
+        }
+        
+        downloadAllPdfBtn.addEventListener('click', async () => {
+            const originalText = downloadAllPdfBtn.textContent;
+            downloadAllPdfBtn.disabled = true;
+            downloadAllPdfBtn.textContent = 'Creating PDF...';
+            try {
+                const pdfJobId = await createPdf(currentResults.map(r => r.jobId));
+                await waitForPdfAndDownload(pdfJobId);
             } catch (err) {
                 alert('Error creating PDF: ' + err.message);
+            } finally {
+                downloadAllPdfBtn.disabled = false;
+                downloadAllPdfBtn.textContent = originalText;
             }
         });
         
         async function downloadSinglePdf(jobId) {
+            const originalText = downloadPdfBtn.textContent;
+            downloadPdfBtn.disabled = true;
+            downloadPdfBtn.textContent = 'Creating PDF...';
             try {
-                const resp = await fetch('/pdf', {
-                    method: 'POST',
-                    headers: { 
-                        'X-API-Key': apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        pages: [{ type: 'job_id', value: jobId }],
-                        mode: selectedMode,
-                        backend: 'auto'
-                    })
-                });
-                
-                if (!resp.ok) throw new Error('Failed to create PDF');
-                const data = await resp.json();
-                alert('PDF creation started. Check History tab for download.');
+                const pdfJobId = await createPdf([jobId]);
+                await waitForPdfAndDownload(pdfJobId);
             } catch (err) {
                 alert('Error creating PDF: ' + err.message);
+            } finally {
+                downloadPdfBtn.disabled = false;
+                downloadPdfBtn.textContent = originalText;
             }
         }
         
