@@ -18,15 +18,13 @@ Self-hosted document scanner that handles real-world mess — cluttered backgrou
 ## Quick Start
 
 ```bash
-# CLI
+# 1. Create an API key
+docker compose exec api python -m scanario.main auth create
+
+# 2. Drop images in the browser at http://localhost:8000
+#    Or use the CLI
 python -m scanario.main scan photo.jpg
 python -m scanario.main pdf page1.jpg page2.jpg -o output.pdf
-
-# API
-curl -X POST http://localhost:8000/scan -H "X-API-Key: $KEY" -F "file=@doc.jpg"
-
-# Web UI
-open http://localhost:8000
 ```
 
 ## Deploy with Docker Compose
