@@ -94,4 +94,4 @@ Set `GEMINI_API_KEY` in a `.env` file next to this `docker-compose.yml`, then:
 docker compose up -d
 ```
 
-API is at `http://localhost:8000`.
+Web UI and API are both at `http://localhost:8000`.
