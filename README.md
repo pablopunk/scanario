@@ -1,5 +1,9 @@
 # scanario
 
+<p align="center">
+  <img src="https://github.com/pablopunk/scanario/blob/main/src/assets/scanario.jpeg?raw=true" width="200px" />
+</p>
+
 Self-hosted document scanner API. Detects paper edges, corrects perspective, enhances the scan, and exposes it over HTTP with a job queue.
 
 ## Deploy with Docker Compose
