@@ -4,9 +4,7 @@
   <img src="https://github.com/pablopunk/scanario/blob/main/src/assets/scanario.jpeg?raw=true" width="200px" />
 </p>
 
-**Turn phone photos into scanner-quality documents.**
-
-Self-hosted document scanner that handles real-world mess — cluttered backgrounds, perspective distortion, shadows, even overlapping receipts. AI segments, math corrects, classical CV enhances. No generative hallucinations.
+> Self-hosted doc scanner. Take pictures with your phone, drop them into scanario, and get a clean PDF.
 
 ## Features
 
