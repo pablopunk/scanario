@@ -24,7 +24,7 @@ docker compose exec api python -m scanario.main auth create
 
 ### Web
 
-Open `http://localhost:8000` → drag images → download PDF.
+Open `http://localhost:8000` → drag images → download PDF/image.
 
 ### API
 
