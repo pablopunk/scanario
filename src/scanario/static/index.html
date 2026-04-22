@@ -641,6 +641,27 @@
                     </div>
                     
                     <div class="settings-section">
+                        <h3>🌓 Appearance</h3>
+                        <div class="form-group">
+                            <label>Theme</label>
+                            <div class="mode-cards" style="grid-template-columns: repeat(3, 1fr);">
+                                <div class="mode-card" data-theme="system" id="themeSystem">
+                                    <div class="mode-icon">🖥️</div>
+                                    <div class="mode-name">System</div>
+                                </div>
+                                <div class="mode-card" data-theme="light" id="themeLight">
+                                    <div class="mode-icon">☀️</div>
+                                    <div class="mode-name">Light</div>
+                                </div>
+                                <div class="mode-card" data-theme="dark" id="themeDark">
+                                    <div class="mode-icon">🌙</div>
+                                    <div class="mode-name">Dark</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
                         <h3>🗑️ Data</h3>
                         <button class="btn btn-secondary" id="clearHistoryBtn">Clear All History</button>
                     </div>
@@ -698,6 +719,9 @@
             document.getElementById('setupModal').classList.add('active');
         }
         
+        // Load theme
+        loadTheme();
+        
         // Setup
         document.getElementById('setupBtn').addEventListener('click', () => {
             const key = document.getElementById('setupApiKey').value.trim();
@@ -716,6 +740,31 @@
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 tab.classList.add('active');
                 document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
+            });
+        });
+        
+        // Theme handling
+        function loadTheme() {
+            const theme = localStorage.getItem('scanarioTheme') || 'system';
+            const root = document.documentElement;
+            if (theme === 'system') {
+                root.removeAttribute('data-theme');
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    root.setAttribute('data-theme', 'light');
+                }
+            } else {
+                root.setAttribute('data-theme', theme);
+            }
+            // Update selection UI (only in settings)
+            document.querySelectorAll('#settingsTab [data-theme]').forEach(el => {
+                el.classList.toggle('selected', el.dataset.theme === theme);
+            });
+        }
+        
+        document.querySelectorAll('#settingsTab [data-theme]').forEach(card => {
+            card.addEventListener('click', () => {
+                localStorage.setItem('scanarioTheme', card.dataset.theme);
+                loadTheme();
             });
         });
         
