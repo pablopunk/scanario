@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -135,9 +135,9 @@ async def health():
 @app.post("/scan", response_model=ScanResponse, dependencies=[Depends(require_api_key)])
 async def scan_document(
     file: UploadFile = File(...),
-    mode: str = settings.default_mode,
-    backend: str = settings.default_backend,
-    debug: bool = False,
+    mode: str = Form(settings.default_mode),
+    backend: str = Form(settings.default_backend),
+    debug: bool = Form(False),
 ):
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(400, "File must be an image")
@@ -218,11 +218,11 @@ async def list_jobs():
 @app.post("/pdf", response_model=PDFResponse, dependencies=[Depends(require_api_key)])
 async def create_pdf_endpoint(
     files: list[UploadFile] = File(default=[]),
-    existing_job_ids: list[str] = [],
-    page_order: list[str] = [],
-    mode: str = settings.default_mode,
-    backend: str = settings.default_backend,
-    debug: bool = False,
+    existing_job_ids: list[str] = Form(default=[]),
+    page_order: list[str] = Form(default=[]),
+    mode: str = Form(settings.default_mode),
+    backend: str = Form(settings.default_backend),
+    debug: bool = Form(False),
 ):
     job_id = create_job()
 
