@@ -723,6 +723,7 @@
                         
                         <div class="action-bar">
                             <button class="btn btn-secondary" id="backBtn">← Back</button>
+                            <button class="btn btn-secondary" id="addImagesBtn">+ Add images to batch</button>
                             <button class="btn btn-primary" id="scanBtn">Scan Document</button>
                         </div>
                     </div>
@@ -941,6 +942,7 @@
         const processingOverlay = document.getElementById('processingOverlay');
         const rotatePreviewLeftBtn = document.getElementById('rotatePreviewLeftBtn');
         const rotatePreviewRightBtn = document.getElementById('rotatePreviewRightBtn');
+        const addImagesBtn = document.getElementById('addImagesBtn');
         const scanBtn = document.getElementById('scanBtn');
         const backBtn = document.getElementById('backBtn');
         const resultsStage = document.getElementById('resultsStage');
@@ -1031,6 +1033,7 @@
         
         // Dropzone
         dropzone.addEventListener('click', () => fileInput.click());
+        addImagesBtn.addEventListener('click', () => fileInput.click());
         
         dropzone.addEventListener('dragover', (e) => {
             e.preventDefault();
