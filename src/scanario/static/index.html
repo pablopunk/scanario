@@ -32,12 +32,17 @@
             --border-default: #e0e0e0;
             --border-hover: #cccccc;
         }
+        html, body {
+            height: 100%;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-page);
             color: var(--text-primary);
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
+            -webkit-text-size-adjust: 100%;
         }
         
         /* App Layout */
@@ -45,6 +50,7 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            height: 100dvh;
         }
         .header {
             display: flex;
@@ -653,6 +659,164 @@
             font-size: 13px;
             font-weight: 600;
             z-index: 10;
+        }
+
+        @media (max-width: 640px) {
+            body { overflow: hidden; }
+            .header {
+                padding: max(10px, env(safe-area-inset-top)) 12px 10px;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .header h1 {
+                font-size: 18px;
+                flex: 1;
+                min-width: 0;
+            }
+            .header h1 img {
+                height: 24px !important;
+                width: 24px !important;
+            }
+            .nav-tabs {
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+            .nav-tab {
+                min-height: 42px;
+                padding: 10px 8px;
+                font-size: 14px;
+            }
+            .dropzone-full {
+                margin: 12px;
+                border-radius: 12px;
+                min-height: 0;
+                text-align: center;
+                padding: 24px 16px;
+            }
+            .dropzone-full .icon { font-size: 48px; margin-bottom: 16px; }
+            .dropzone-full h2 { font-size: 20px; }
+            .preview-main,
+            .results-main {
+                align-items: flex-start;
+                padding-top: 8px;
+            }
+            .preview-image,
+            .result-image {
+                max-width: 100%;
+                max-height: calc(100dvh - 360px);
+                margin-top: 0;
+            }
+            .image-counter {
+                top: 10px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .batch-indicator {
+                top: 10px;
+                right: 10px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .carousel-nav {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+                background: var(--bg-overlay);
+            }
+            .carousel-nav.prev { left: 10px; }
+            .carousel-nav.next { right: 10px; }
+            #rotatePreviewLeftBtn,
+            #rotateResultLeftBtn { bottom: 148px !important; left: 16px; top: auto !important; }
+            #rotatePreviewRightBtn,
+            #rotateResultRightBtn { bottom: 148px !important; right: 16px; top: auto !important; }
+            .mode-overlay {
+                padding: 18px 12px 12px;
+                gap: 10px;
+                background: linear-gradient(to top, var(--bg-page) 0%, var(--bg-overlay) 72%, transparent 100%);
+            }
+            .mode-card {
+                flex: 1;
+                min-width: 0;
+                max-width: 170px;
+                padding: 12px 10px;
+                border-radius: 10px;
+                gap: 6px;
+            }
+            .mode-card .icon { width: 28px; height: 28px; }
+            .mode-card .name { font-size: 14px; }
+            .mode-card .desc { font-size: 11px; }
+            .action-bar {
+                padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+                gap: 8px;
+                display: grid;
+                grid-template-columns: 48px 1fr 1fr;
+            }
+            .action-bar .btn {
+                justify-content: center;
+                min-height: 48px;
+                padding: 10px 12px;
+                font-size: 14px;
+                white-space: nowrap;
+            }
+            #backBtn { font-size: 0; padding: 0; }
+            #backBtn::before { content: '←'; font-size: 22px; }
+            .results-stage .action-bar { grid-template-columns: 1fr; }
+            .download-overlay {
+                left: 12px;
+                right: 12px;
+                bottom: 12px;
+                transform: none;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                padding: 8px;
+            }
+            .download-overlay .btn {
+                justify-content: center;
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+            #downloadAllPdfBtn { grid-column: 1 / -1; }
+            .history-container,
+            .settings-container {
+                padding: 12px;
+                padding-bottom: calc(24px + env(safe-area-inset-bottom));
+            }
+            .history-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+            .history-item img { height: 120px; }
+            .history-item .meta {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .settings-section,
+            .setup-card {
+                padding: 16px;
+                border-radius: 10px;
+            }
+            .theme-toggle,
+            .api-key-tabs {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .api-key-command {
+                flex-direction: column;
+            }
+            .api-key-command code {
+                white-space: pre-wrap;
+                word-break: break-word;
+                font-size: 12px;
+            }
+            .copy-btn {
+                min-height: 42px;
+                border-left: none;
+                border-top: 1px solid var(--border-default);
+            }
         }
     </style>
 </head>
