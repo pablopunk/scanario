@@ -110,3 +110,58 @@ def revoke_by_prefix(prefix: str) -> int:
 
 def has_any_key() -> bool:
     return bool(_load()["keys"])
+
+
+def main() -> None:
+    """Small, fast CLI for managing API keys without importing scan pipeline deps."""
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Manage scanario API keys")
+    subparsers = parser.add_subparsers(dest="action", required=True)
+
+    create_parser = subparsers.add_parser("create", help="Create a new API key")
+    create_parser.add_argument("--label", help="Optional label for this key")
+
+    subparsers.add_parser("list", help="List stored API keys (prefixes only)")
+
+    revoke_parser = subparsers.add_parser("revoke", help="Revoke keys by prefix")
+    revoke_parser.add_argument("prefix", help="Full key or any prefix (e.g. 'sk_abc123')")
+
+    args = parser.parse_args()
+
+    if args.action == "create":
+        try:
+            key = create_key(label=args.label or "")
+        except Exception as exc:
+            print(f"Error: could not write auth file ({exc}).", file=sys.stderr)
+            print("Make sure SCANARIO_DATA_DIR is writable.", file=sys.stderr)
+            sys.exit(1)
+        print("✅ New API key created. Save it now – it will NOT be shown again:\n")
+        print(f"   {key}\n")
+        print("Send it on every request as either:")
+        print("  X-API-Key: <key>")
+        print("  Authorization: Bearer <key>")
+        return
+
+    if args.action == "list":
+        keys = list_keys()
+        if not keys:
+            print("No API keys yet. Create one with: python -m scanario.auth create")
+            return
+        print(f"{'PREFIX':<20}  {'CREATED':<30}  LABEL")
+        for key_info in keys:
+            print(f"{key_info.prefix:<20}  {key_info.created_at:<30}  {key_info.label}")
+        return
+
+    if args.action == "revoke":
+        n = revoke_by_prefix(args.prefix)
+        print(f"Revoked {n} key(s).")
+        return
+
+    parser.print_help()
+    sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

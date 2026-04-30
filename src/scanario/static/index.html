@@ -772,8 +772,8 @@
                                 <button class="api-key-tab" onclick="showApiKeyCommand('settings', 'container')">Inside container</button>
                             </div>
                             <div class="api-key-command" data-api-key-command="settings-host">
-                                <code>docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.main auth create</code>
-                                <button class="copy-btn" onclick="copyToClipboard('docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.main auth create', this)" title="Copy to clipboard">
+                                <code>docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.auth create</code>
+                                <button class="copy-btn" onclick="copyToClipboard('docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.auth create', this)" title="Copy to clipboard">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -781,8 +781,8 @@
                                 </button>
                             </div>
                             <div class="api-key-command hidden" data-api-key-command="settings-container">
-                                <code>python -m scanario.main auth create</code>
-                                <button class="copy-btn" onclick="copyToClipboard('python -m scanario.main auth create', this)" title="Copy to clipboard">
+                                <code>python -m scanario.auth create</code>
+                                <button class="copy-btn" onclick="copyToClipboard('python -m scanario.auth create', this)" title="Copy to clipboard">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -855,8 +855,8 @@
                     <button class="api-key-tab" onclick="showApiKeyCommand('setup', 'container')">Inside container</button>
                 </div>
                 <div class="api-key-command" data-api-key-command="setup-host">
-                    <code>docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.main auth create</code>
-                    <button class="copy-btn" onclick="copyToClipboard('docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.main auth create', this)" title="Copy to clipboard">
+                    <code>docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.auth create</code>
+                    <button class="copy-btn" onclick="copyToClipboard('docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.auth create', this)" title="Copy to clipboard">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -864,8 +864,8 @@
                     </button>
                 </div>
                 <div class="api-key-command hidden" data-api-key-command="setup-container">
-                    <code>python -m scanario.main auth create</code>
-                    <button class="copy-btn" onclick="copyToClipboard('python -m scanario.main auth create', this)" title="Copy to clipboard">
+                    <code>python -m scanario.auth create</code>
+                    <button class="copy-btn" onclick="copyToClipboard('python -m scanario.auth create', this)" title="Copy to clipboard">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>

@@ -21,7 +21,7 @@
 
 ```bash
 # Create an API key
-docker compose exec api python -m scanario.main auth create
+docker compose exec api python -m scanario.auth create
 ```
 
 ### Web

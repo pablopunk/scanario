@@ -55,8 +55,8 @@ validate_gemini_api_key()
 
 AUTH_HINT = (
     "Create one with one of these options:\n"
-    f"  On your Docker host: docker exec -it {socket.gethostname()} python -m scanario.main auth create\n"
-    "  Inside the API container: python -m scanario.main auth create\n"
+    f"  On your Docker host: docker exec -it {socket.gethostname()} python -m scanario.auth create\n"
+    "  Inside the API container: python -m scanario.auth create\n"
     "Then send it as 'X-API-Key: <your-key>' or 'Authorization: Bearer <your-key>'."
 )
 

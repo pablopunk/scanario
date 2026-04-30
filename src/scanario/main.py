@@ -10,21 +10,46 @@ Pipeline:
      object lying on top of the paper (e.g. a small receipt).
 """
 
+from __future__ import annotations
+
 import argparse
 import io
 import re
 import sys
 from pathlib import Path
 
-import cv2
-import numpy as np
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
-from PIL import Image
-from rembg import remove, new_session
 
 load_dotenv()
+
+cv2 = None
+np = None
+genai = None
+types = None
+Image = None
+remove = None
+new_session = None
+
+
+def load_scan_deps():
+    """Import heavy image-processing dependencies only for scan/PDF commands."""
+    global cv2, np, genai, types, Image, remove, new_session
+    if cv2 is not None:
+        return
+    import cv2 as _cv2
+    import numpy as _np
+    from google import genai as _genai
+    from google.genai import types as _types
+    from PIL import Image as _Image
+    from rembg import remove as _remove, new_session as _new_session
+
+    cv2 = _cv2
+    np = _np
+    genai = _genai
+    types = _types
+    Image = _Image
+    remove = _remove
+    new_session = _new_session
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 NANO_BANANA_PROMPT = (
@@ -993,6 +1018,9 @@ def build_step_path(base_dir: Path, step_num: int, step_name: str, image_slug: s
 
 def cmd_scan(args):
     """Handle the scan subcommand."""
+    from scanario.config import validate_gemini_api_key
+    validate_gemini_api_key()
+    load_scan_deps()
     inp = Path(args.input)
     img = cv2.imread(str(inp))
     if img is None:
@@ -1029,6 +1057,9 @@ def cmd_scan(args):
 
 def cmd_pdf(args):
     """Handle the pdf subcommand."""
+    from scanario.config import validate_gemini_api_key
+    validate_gemini_api_key()
+    load_scan_deps()
     from scanario.pdf_utils import create_pdf_from_images, collect_pages
     
     output_path = Path(args.output)
@@ -1141,10 +1172,6 @@ def cmd_auth(args):
 
 
 def main():
-    # Validate GEMINI_API_KEY before any processing
-    from scanario.config import validate_gemini_api_key
-    validate_gemini_api_key()
-    
     parser = argparse.ArgumentParser(description="scanario – document corner detector and PDF creator")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
