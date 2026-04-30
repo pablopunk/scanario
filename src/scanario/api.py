@@ -1,8 +1,9 @@
+import json
 from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -138,6 +139,7 @@ async def scan_document(
     mode: str = Form(settings.default_mode),
     backend: str = Form(settings.default_backend),
     debug: bool = Form(False),
+    rotation: int = Form(0),
 ):
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(400, "File must be an image")
@@ -146,7 +148,7 @@ async def scan_document(
     data = await file.read()
     save_upload(job_id, data)
 
-    task = process_scan.delay(job_id, mode, backend, debug)
+    task = process_scan.delay(job_id, mode, backend, debug, rotation)
     set_task_id(job_id, task.id)
 
     return ScanResponse(
@@ -176,10 +178,21 @@ async def get_job_status(job_id: str):
 
 
 @app.get("/images/{job_id}/{filename}", dependencies=[Depends(require_api_key)])
-async def get_image(job_id: str, filename: str):
+async def get_image(job_id: str, filename: str, rotation: int = 0):
     path = get_result_path(job_id, filename)
     if path is None:
         raise HTTPException(404, "Image not found")
+    if rotation:
+        from scanario.image_utils import normalize_rotation, rotate_image
+        import cv2
+        rot = normalize_rotation(rotation)
+        img = cv2.imread(str(path))
+        if img is None:
+            return FileResponse(path)
+        ok, encoded = cv2.imencode(".jpg", rotate_image(img, rot), [cv2.IMWRITE_JPEG_QUALITY, 95])
+        if not ok:
+            raise HTTPException(500, "Could not rotate image")
+        return Response(content=encoded.tobytes(), media_type="image/jpeg")
     return FileResponse(path)
 
 
@@ -220,6 +233,7 @@ async def create_pdf_endpoint(
     files: list[UploadFile] = File(default=[]),
     existing_job_ids: list[str] = Form(default=[]),
     page_order: list[str] = Form(default=[]),
+    pages: str = Form(default=""),
     mode: str = Form(settings.default_mode),
     backend: str = Form(settings.default_backend),
     debug: bool = Form(False),
@@ -236,7 +250,22 @@ async def create_pdf_endpoint(
             file_mapping[i] = str(upload_path)
 
     page_specs = []
-    if page_order:
+    if pages:
+        try:
+            parsed_pages = json.loads(pages)
+            if not isinstance(parsed_pages, list):
+                raise ValueError
+            for page in parsed_pages:
+                if page.get("type") == "file":
+                    idx = int(page.get("index"))
+                    if idx in file_mapping:
+                        page_specs.append({"type": "file", "path": file_mapping[idx], "rotation": page.get("rotation", 0)})
+                elif page.get("type") in ("job", "job_id"):
+                    page_specs.append({"type": "job_id", "value": page.get("value") or page.get("job_id"), "rotation": page.get("rotation", 0)})
+        except Exception:
+            delete_job(job_id)
+            raise HTTPException(400, "Invalid pages JSON")
+    elif page_order:
         for spec in page_order:
             if spec.startswith("file:"):
                 idx = int(spec.split(":")[1])

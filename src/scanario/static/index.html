@@ -650,6 +650,8 @@
                             <button class="carousel-nav prev hidden" id="prevBtn">‹</button>
                             <img class="preview-image" id="previewImage" src="" alt="Preview">
                             <button class="carousel-nav next hidden" id="nextBtn">›</button>
+                            <button class="carousel-nav prev" id="rotatePreviewLeftBtn" style="top:auto; bottom:120px;">↶</button>
+                            <button class="carousel-nav next" id="rotatePreviewRightBtn" style="top:auto; bottom:120px;">↷</button>
                             
                             <!-- Processing Overlay -->
                             <div class="processing-overlay" id="processingOverlay">
@@ -695,6 +697,8 @@
                             <button class="carousel-nav prev hidden" id="resultPrevBtn">‹</button>
                             <img class="result-image" id="resultImage" src="" alt="Result">
                             <button class="carousel-nav next hidden" id="resultNextBtn">›</button>
+                            <button class="carousel-nav prev" id="rotateResultLeftBtn" style="top:auto; bottom:120px;">↶</button>
+                            <button class="carousel-nav next" id="rotateResultRightBtn" style="top:auto; bottom:120px;">↷</button>
                             
                             <div class="download-overlay">
                                 <button class="btn btn-secondary" id="downloadPngBtn">📥 Download PNG</button>
@@ -847,6 +851,8 @@
         let currentFileIndex = 0;
         let currentResults = [];
         let currentJobIds = [];
+        let sourceRotations = [];
+        let resultRotations = {};
         let selectedMode = 'gray';
         let apiKey = localStorage.getItem('scanarioApiKey') || '';
         
@@ -860,6 +866,8 @@
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const processingOverlay = document.getElementById('processingOverlay');
+        const rotatePreviewLeftBtn = document.getElementById('rotatePreviewLeftBtn');
+        const rotatePreviewRightBtn = document.getElementById('rotatePreviewRightBtn');
         const scanBtn = document.getElementById('scanBtn');
         const backBtn = document.getElementById('backBtn');
         const resultsStage = document.getElementById('resultsStage');
@@ -867,6 +875,8 @@
         const resultCounter = document.getElementById('resultCounter');
         const resultPrevBtn = document.getElementById('resultPrevBtn');
         const resultNextBtn = document.getElementById('resultNextBtn');
+        const rotateResultLeftBtn = document.getElementById('rotateResultLeftBtn');
+        const rotateResultRightBtn = document.getElementById('rotateResultRightBtn');
         const downloadPngBtn = document.getElementById('downloadPngBtn');
         const downloadPdfBtn = document.getElementById('downloadPdfBtn');
         const downloadAllPdfBtn = document.getElementById('downloadAllPdfBtn');
@@ -970,6 +980,7 @@
                 return;
             }
             currentFileIndex = 0;
+            sourceRotations = selectedFiles.map(() => 0);
             showPreview();
         }
         
@@ -993,6 +1004,7 @@
             const file = selectedFiles[currentFileIndex];
             const url = URL.createObjectURL(file);
             previewImage.src = url;
+            previewImage.style.transform = `rotate(${sourceRotations[currentFileIndex] || 0}deg)`;
             imageCounter.textContent = `${currentFileIndex + 1} / ${selectedFiles.length}`;
         }
         
@@ -1017,6 +1029,13 @@
             }
         });
         
+        function rotatePreview(delta) {
+            sourceRotations[currentFileIndex] = ((sourceRotations[currentFileIndex] || 0) + delta + 360) % 360;
+            updatePreviewImage();
+        }
+        rotatePreviewLeftBtn.addEventListener('click', () => rotatePreview(-90));
+        rotatePreviewRightBtn.addEventListener('click', () => rotatePreview(90));
+        
         // Mode Selection
         document.querySelectorAll('.mode-card').forEach(card => {
             card.addEventListener('click', () => {
@@ -1040,11 +1059,12 @@
                 currentResults = [];
                 currentJobIds = [];
                 
-                for (const file of selectedFiles) {
+                for (const [index, file] of selectedFiles.entries()) {
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('mode', selectedMode);
                     formData.append('backend', 'auto');
+                    formData.append('rotation', sourceRotations[index] || 0);
                     
                     const resp = await fetch('/scan', {
                         method: 'POST',
@@ -1119,11 +1139,14 @@
         
         function updateResultImage() {
             const result = currentResults[currentFileIndex];
+            const rotation = resultRotations[result.jobId] || 0;
             resultImage.src = `/images/${result.jobId}/${result.file}?api_key=${encodeURIComponent(apiKey)}`;
+            resultImage.style.transform = `rotate(${rotation}deg)`;
             resultCounter.textContent = `${currentFileIndex + 1} / ${currentResults.length}`;
             
             downloadPngBtn.onclick = () => {
-                window.open(`/images/${result.jobId}/${result.file}?api_key=${encodeURIComponent(apiKey)}`, '_blank');
+                const rotation = resultRotations[result.jobId] || 0;
+                window.open(`/images/${result.jobId}/${result.file}?api_key=${encodeURIComponent(apiKey)}&rotation=${rotation}`, '_blank');
             };
             
             downloadPdfBtn.onclick = () => {
@@ -1156,10 +1179,11 @@
             const formData = new FormData();
             formData.append('mode', selectedMode);
             formData.append('backend', 'auto');
-            for (const jid of jobIds) {
-                formData.append('existing_job_ids', jid);
-                formData.append('page_order', 'job:' + jid);
-            }
+            formData.append('pages', JSON.stringify(jobIds.map(jid => ({
+                type: 'job',
+                value: jid,
+                rotation: resultRotations[jid] || 0
+            }))));
             
             const resp = await fetch('/pdf', {
                 method: 'POST',
@@ -1221,6 +1245,15 @@
             }
         });
         
+        function rotateResult(delta) {
+            const result = currentResults[currentFileIndex];
+            if (!result) return;
+            resultRotations[result.jobId] = ((resultRotations[result.jobId] || 0) + delta + 360) % 360;
+            updateResultImage();
+        }
+        rotateResultLeftBtn.addEventListener('click', () => rotateResult(-90));
+        rotateResultRightBtn.addEventListener('click', () => rotateResult(90));
+        
         async function downloadSinglePdf(jobId) {
             const originalText = downloadPdfBtn.textContent;
             downloadPdfBtn.disabled = true;
@@ -1241,6 +1274,7 @@
             previewStage.classList.remove('active');
             dropzone.style.display = 'flex';
             selectedFiles = [];
+            sourceRotations = [];
         });
         
         function resetToDropzone() {
@@ -1250,6 +1284,8 @@
             dropzone.style.display = 'flex';
             selectedFiles = [];
             currentResults = [];
+            sourceRotations = [];
+            resultRotations = {};
             currentFileIndex = 0;
             switchTab('scan');
         }

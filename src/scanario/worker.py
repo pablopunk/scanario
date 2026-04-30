@@ -28,16 +28,18 @@ celery_app.conf.update(
 )
 
 
-def run_scanario(input_path: Path, output_dir: Path, mode: str, backend: str, debug: bool = False):
+def run_scanario(input_path: Path, output_dir: Path, mode: str, backend: str, debug: bool = False, rotation: int = 0):
     """Import and run scanario processing."""
     validate_gemini_api_key()
     # Import here to avoid loading heavy deps on worker startup
     from scanario import main as scanario
+    from scanario.image_utils import rotate_image
     import cv2
     
     img = cv2.imread(str(input_path))
     if img is None:
         raise ValueError(f"Could not load image: {input_path}")
+    img = rotate_image(img, rotation)
     
     debug_dir = output_dir / "debug" if debug else None
     if debug_dir:
@@ -63,20 +65,21 @@ def run_scanario(input_path: Path, output_dir: Path, mode: str, backend: str, de
         "mode": mode,
         "backend": backend,
         "debug": debug,
+        "rotation": rotation,
     }
     
     return result
 
 
 @celery_app.task(bind=True, max_retries=2)
-def process_scan(self, job_id: str, mode: str, backend: str, debug: bool = False):
+def process_scan(self, job_id: str, mode: str, backend: str, debug: bool = False, rotation: int = 0):
     """Process a scan job."""
     try:
         input_path = get_upload_path(job_id)
         output_dir = get_results_dir(job_id)
         output_dir.mkdir(parents=True, exist_ok=True)
         
-        result = run_scanario(input_path, output_dir, mode, backend, debug)
+        result = run_scanario(input_path, output_dir, mode, backend, debug, rotation)
         
         return {
             "status": "completed",
@@ -121,9 +124,12 @@ def create_pdf(self, job_id: str, page_specs: list, mode: str, backend: str, deb
                 # For now, assume it's at a known path
                 temp_input = Path(spec['path'])
                 
+                from scanario.image_utils import rotate_image, normalize_rotation
+                rotation = normalize_rotation(spec.get('rotation', 0))
                 img = cv2.imread(str(temp_input))
                 if img is None:
                     continue
+                img = rotate_image(img, rotation)
                 
                 debug_dir = output_dir / f"debug_page_{i}" if debug else None
                 if debug_dir:
@@ -149,12 +155,22 @@ def create_pdf(self, job_id: str, page_specs: list, mode: str, backend: str, deb
                 # Prefer enhanced image
                 enhanced = list(existing_dir.glob('03-enhanced-*.jpg'))
                 if enhanced:
-                    page_images.append(enhanced[0])
+                    image_path = enhanced[0]
+                    from scanario.image_utils import normalize_rotation, rotated_copy
+                    rotation = normalize_rotation(spec.get('rotation', 0))
+                    if rotation:
+                        image_path = rotated_copy(image_path, output_dir / f"_rotated_page_{i:03d}.jpg", rotation)
+                    page_images.append(image_path)
                 else:
                     # Any jpg will do
                     images = sorted(existing_dir.glob('*.jpg'))
                     if images:
-                        page_images.append(images[0])
+                        image_path = images[0]
+                        from scanario.image_utils import normalize_rotation, rotated_copy
+                        rotation = normalize_rotation(spec.get('rotation', 0))
+                        if rotation:
+                            image_path = rotated_copy(image_path, output_dir / f"_rotated_page_{i:03d}.jpg", rotation)
+                        page_images.append(image_path)
         
         if not page_images:
             raise ValueError("No valid pages to include in PDF")
