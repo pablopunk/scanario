@@ -147,6 +147,11 @@
         .preview-stage.active {
             display: flex;
         }
+        .preview-stage.dragover .preview-main {
+            outline: 3px dashed var(--accent-primary);
+            outline-offset: -16px;
+            background: var(--bg-input);
+        }
         .preview-main {
             flex: 1;
             min-height: 0;
@@ -1043,17 +1048,47 @@
         });
         
         fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
+            handleFiles(e.target.files, previewStage.classList.contains('active'));
+            fileInput.value = '';
         });
         
-        function handleFiles(files) {
-            selectedFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
-            if (selectedFiles.length === 0) {
+        previewStage.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!processingOverlay.classList.contains('active')) {
+                previewStage.classList.add('dragover');
+            }
+        });
+        
+        previewStage.addEventListener('dragleave', (e) => {
+            if (!previewStage.contains(e.relatedTarget)) {
+                previewStage.classList.remove('dragover');
+            }
+        });
+        
+        previewStage.addEventListener('drop', (e) => {
+            e.preventDefault();
+            previewStage.classList.remove('dragover');
+            if (!processingOverlay.classList.contains('active')) {
+                handleFiles(e.dataTransfer.files, true);
+            }
+        });
+        
+        function handleFiles(files, append = false) {
+            const incomingFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            if (incomingFiles.length === 0) {
                 alert('Please select image files');
                 return;
             }
-            currentFileIndex = 0;
-            sourceRotations = selectedFiles.map(() => 0);
+            if (append && selectedFiles.length > 0) {
+                const previousCount = selectedFiles.length;
+                selectedFiles = selectedFiles.concat(incomingFiles);
+                sourceRotations = sourceRotations.concat(incomingFiles.map(() => 0));
+                currentFileIndex = previousCount;
+            } else {
+                selectedFiles = incomingFiles;
+                currentFileIndex = 0;
+                sourceRotations = selectedFiles.map(() => 0);
+            }
             showPreview();
         }
         
