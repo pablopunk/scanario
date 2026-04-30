@@ -279,7 +279,9 @@
             background: var(--accent-primary-hover);
         }
         .btn-primary:disabled {
-            opacity: 0.5;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            opacity: 1;
             cursor: not-allowed;
         }
         .btn-secondary {
@@ -483,6 +485,36 @@
             font-weight: 600;
             color: var(--text-secondary);
             margin-bottom: 12px;
+        }
+        .api-key-tabs {
+            display: flex;
+            gap: 0;
+            background: var(--bg-input);
+            border: 1px solid var(--border-default);
+            border-radius: 4px;
+            padding: 4px;
+            margin-bottom: 8px;
+        }
+        .api-key-tab {
+            flex: 1;
+            padding: 8px 10px;
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .api-key-tab:hover {
+            color: var(--text-primary);
+        }
+        .api-key-tab.active {
+            background: var(--accent-primary);
+            color: #151515;
         }
         .api-key-command {
             display: flex;
@@ -735,9 +767,22 @@
                         </div>
                         <div class="api-key-help">
                             <div class="api-key-help-title">To create a new API key, run:</div>
-                            <div class="api-key-command">
-                                <code>docker compose exec api python -m scanario.main auth create</code>
-                                <button class="copy-btn" onclick="copyToClipboard('docker compose exec api python -m scanario.main auth create', this)" title="Copy to clipboard">
+                            <div class="api-key-tabs" data-api-key-tabs="settings">
+                                <button class="api-key-tab active" onclick="showApiKeyCommand('settings', 'host')">Docker host</button>
+                                <button class="api-key-tab" onclick="showApiKeyCommand('settings', 'container')">Inside container</button>
+                            </div>
+                            <div class="api-key-command" data-api-key-command="settings-host">
+                                <code>docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.main auth create</code>
+                                <button class="copy-btn" onclick="copyToClipboard('docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.main auth create', this)" title="Copy to clipboard">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="api-key-command hidden" data-api-key-command="settings-container">
+                                <code>python -m scanario.main auth create</code>
+                                <button class="copy-btn" onclick="copyToClipboard('python -m scanario.main auth create', this)" title="Copy to clipboard">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -805,9 +850,22 @@
             </div>
             <div class="api-key-help">
                 <div class="api-key-help-title">How to get an API key:</div>
-                <div class="api-key-command">
-                    <code>docker compose exec api python -m scanario.main auth create</code>
-                    <button class="copy-btn" onclick="copyToClipboard('docker compose exec api python -m scanario.main auth create', this)" title="Copy to clipboard">
+                <div class="api-key-tabs" data-api-key-tabs="setup">
+                    <button class="api-key-tab active" onclick="showApiKeyCommand('setup', 'host')">Docker host</button>
+                    <button class="api-key-tab" onclick="showApiKeyCommand('setup', 'container')">Inside container</button>
+                </div>
+                <div class="api-key-command" data-api-key-command="setup-host">
+                    <code>docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.main auth create</code>
+                    <button class="copy-btn" onclick="copyToClipboard('docker exec -it __SCANARIO_CONTAINER_HOSTNAME__ python -m scanario.main auth create', this)" title="Copy to clipboard">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="api-key-command hidden" data-api-key-command="setup-container">
+                    <code>python -m scanario.main auth create</code>
+                    <button class="copy-btn" onclick="copyToClipboard('python -m scanario.main auth create', this)" title="Copy to clipboard">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -815,11 +873,21 @@
                     </button>
                 </div>
             </div>
-            <button class="btn btn-primary" id="setupBtn" style="width: 100%; margin-top: 16px;">Get Started</button>
+            <button class="btn btn-primary" id="setupBtn" style="width: 100%; margin-top: 16px;" disabled>Get Started</button>
         </div>
     </div>
 
     <script>
+        // API key command tabs
+        function showApiKeyCommand(group, target) {
+            document.querySelectorAll(`[data-api-key-command^="${group}-"]`).forEach(el => {
+                el.classList.toggle('hidden', el.dataset.apiKeyCommand !== `${group}-${target}`);
+            });
+            document.querySelectorAll(`[data-api-key-tabs="${group}"] .api-key-tab`).forEach((tab, index) => {
+                tab.classList.toggle('active', (target === 'host' && index === 0) || (target === 'container' && index === 1));
+            });
+        }
+
         // Copy to clipboard
         async function copyToClipboard(text, btn) {
             try {
@@ -891,8 +959,13 @@
         loadTheme();
         
         // Setup
-        document.getElementById('setupBtn').addEventListener('click', () => {
-            const key = document.getElementById('setupApiKey').value.trim();
+        const setupApiKeyInput = document.getElementById('setupApiKey');
+        const setupBtn = document.getElementById('setupBtn');
+        setupApiKeyInput.addEventListener('input', () => {
+            setupBtn.disabled = !setupApiKeyInput.value.trim();
+        });
+        setupBtn.addEventListener('click', () => {
+            const key = setupApiKeyInput.value.trim();
             if (key) {
                 apiKey = key;
                 localStorage.setItem('scanarioApiKey', apiKey);

@@ -1,4 +1,5 @@
 import json
+import socket
 from pathlib import Path
 from typing import Optional
 
@@ -38,7 +39,8 @@ async def root():
     """Serve the web UI."""
     index_file = static_dir / "index.html"
     if index_file.exists():
-        return HTMLResponse(content=index_file.read_text())
+        content = index_file.read_text().replace("__SCANARIO_CONTAINER_HOSTNAME__", socket.gethostname())
+        return HTMLResponse(content=content)
     return HTMLResponse(content="<h1>scanario API</h1><p>UI not found. API is at /docs</p>")
 
 settings = get_settings()
@@ -52,8 +54,9 @@ validate_gemini_api_key()
 # ---------------------------------------------------------------------------
 
 AUTH_HINT = (
-    "Create one with:\n"
-    "  docker compose exec api python -m scanario.main auth create\n"
+    "Create one with one of these options:\n"
+    f"  On your Docker host: docker exec -it {socket.gethostname()} python -m scanario.main auth create\n"
+    "  Inside the API container: python -m scanario.main auth create\n"
     "Then send it as 'X-API-Key: <your-key>' or 'Authorization: Bearer <your-key>'."
 )
 
