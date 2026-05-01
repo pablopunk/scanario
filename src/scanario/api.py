@@ -43,6 +43,15 @@ async def root():
         return HTMLResponse(content=content)
     return HTMLResponse(content="<h1>scanario API</h1><p>UI not found. API is at /docs</p>")
 
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Serve favicon from the root path browsers request by default."""
+    favicon_file = static_dir / "favicon.ico"
+    if favicon_file.exists():
+        return FileResponse(favicon_file, media_type="image/x-icon")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
 settings = get_settings()
 
 # Validate GEMINI_API_KEY on startup (after settings loaded from .env)
