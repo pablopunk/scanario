@@ -165,9 +165,10 @@ async def scan_document(
 async def get_job_status(job_id: str):
     result_files = get_result_files(job_id)
     upload_path = get_upload_path(job_id)
+    upload_dir = upload_path.parent
     has_results = bool(result_files)
 
-    if not has_results and not upload_path.exists():
+    if not has_results and not upload_path.exists() and not upload_dir.exists():
         raise HTTPException(404, "Job not found")
 
     info = resolve_status(job_id, has_results)

@@ -57,12 +57,22 @@ def resolve_status(job_id: str, has_results: bool) -> dict:
     if state in ("STARTED", "RETRY"):
         return {"status": "processing", "error": None}
     if state == "SUCCESS":
+        info = None
+        try:
+            info = result.info
+        except Exception:
+            pass
+        if isinstance(info, dict) and info.get("status") == "failed":
+            return {"status": "failed", "error": info.get("error") or "task failed"}
         return {"status": "completed", "error": None}
     if state in ("FAILURE", "REVOKED"):
         err = None
         try:
             info = result.info
-            err = str(info) if info else state.lower()
+            if isinstance(info, dict):
+                err = info.get("error") or str(info)
+            else:
+                err = str(info) if info else state.lower()
         except Exception:
             err = state.lower()
         return {"status": "failed", "error": err}
