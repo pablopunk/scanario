@@ -36,6 +36,7 @@ def run_scanario(input_path: Path, output_dir: Path, mode: str, backend: str, de
     from scanario.image_utils import rotate_image
     import cv2
     
+    scanario.load_scan_deps()
     img = cv2.imread(str(input_path))
     if img is None:
         raise ValueError(f"Could not load image: {input_path}")
@@ -108,6 +109,8 @@ def create_pdf(self, job_id: str, page_specs: list, mode: str, backend: str, deb
     from scanario.storage import get_results_dir, get_upload_path
     import cv2
     from scanario import main as scanario
+    
+    scanario.load_scan_deps()
     
     try:
         output_dir = get_results_dir(job_id)
